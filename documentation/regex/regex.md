@@ -13,7 +13,7 @@
    - [Groups](#groups)
 4. [Debugging tools](#debugging-tools)
    - [Pattern explanation](#explaining-the-structure-of-a-pattern)
-   - [Explaining why a pattern does not match like expected](#explaining-why-a-pattern-does-not-match-like-expected-)
+   - [Explaining why a pattern does not match like expected](#explaining-why-a-pattern-does-not-match-like-expected)
 
 
 ## Introduction
@@ -236,7 +236,7 @@ By default, the explainer returns a multiline string, displaying a table with th
 +--------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-### Explaining why a pattern does not match like expected 
+### Explaining why a pattern does not match like expected
 If you need help in discovering why a given text does not match a pattern, 
 pass the pattern an explainer using the **explainMatchUsing** method on the pattern. 
 You can use the included **ExplainerFactory** to create an explainer. 
