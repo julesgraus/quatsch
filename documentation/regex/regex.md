@@ -13,6 +13,7 @@
    - [Groups](#groups)
 4. [Debugging tools](#debugging-tools)
    - [Pattern explanation](#explaining-the-structure-of-a-pattern)
+   - [Explaining why a pattern does not match like expected](#explaining-why-a-pattern-does-not-match-like-expected-)
 
 
 ## Introduction
