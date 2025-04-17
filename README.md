@@ -23,7 +23,7 @@ The tools provided in this package can help you do the next things and more:
 If you have big log files and only are interested in just the errors without the stacktraces, you could extract
 just the errors into a new file that makes sense.
 
-## API data handling
+### API data handling
 Use it to retrieve data from an api and map / transform it to your business / domain logic.
 
 ### Components
