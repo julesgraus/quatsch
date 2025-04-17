@@ -26,7 +26,7 @@ just the errors into a new file that makes sense.
 ### API data handling
 Use it to retrieve data from an api and map / transform it to your business / domain logic.
 
-### Components
+## Components and Features
 In this package you can fluently build regexes. These regexes can be used in tasks that extract or transform data.
 Tasks can also load and store your extracted data from local and external sources. 
 
