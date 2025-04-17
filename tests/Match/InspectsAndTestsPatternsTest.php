@@ -43,11 +43,11 @@ class InspectsAndTestsPatternsTest extends TestCase
 
     public function test_it_explains_matches(): void
     {
-        $pattern = Pattern::instance()
+        $pattern = Pattern::create()
             ->then('foo')
             ->digit()
             ->or(
-                Pattern::instance()
+                Pattern::create()
                     ->then('bar')
                     ->digit()
                     ->times(2)

@@ -32,7 +32,7 @@ use JulesGraus\Quatsch\Pattern\Enums\Type;
         $this->description = 'The start of the pattern';
     }
 
-    public static function instance(): Pattern
+    public static function create(): Pattern
     {
         return new static();
 

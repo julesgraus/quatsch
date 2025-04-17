@@ -123,7 +123,7 @@ class PatternHasAnchorsTest extends TestCase
     public function test_starts_with_word_boundary(): void
     {
         preg_match(
-            Pattern::wordBoundaryFollowedBy("Bar"),
+            Pattern::startsWithWordBoundaryFollowedBy("Bar"),
             "Foo Bar Qux",
             $matches
         );
@@ -131,7 +131,7 @@ class PatternHasAnchorsTest extends TestCase
         self::assertEquals("Bar", $matches[0]);
 
         preg_match(
-            Pattern::wordBoundaryFollowedBy('FooBar'),
+            Pattern::startsWithWordBoundaryFollowedBy('FooBar'),
             "Foo Bar",
             $matches
         );

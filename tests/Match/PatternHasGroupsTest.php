@@ -103,7 +103,7 @@ class PatternHasGroupsTest extends TestCase
         $pattern = Pattern::startsCaptureByName('starts_with_rma','RMA')
             ->optionally()
             ->ifGroupMatches('starts_with_rma')
-            ->then(Pattern::instance()->digit()->times(5))
+            ->then(Pattern::create()->digit()->times(5))
             ->else(Pattern::contains('O')->digit()->times(7));
 
         preg_match(

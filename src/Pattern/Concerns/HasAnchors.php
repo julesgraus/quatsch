@@ -51,7 +51,7 @@ trait HasAnchors
         return $this;
     }
 
-    public static function wordBoundaryFollowedBy(Pattern|string $pattern): self
+    public static function startsWithWordBoundaryFollowedBy(Pattern|string $pattern): self
     {
         $instance = new self();
         $instance->ownPattern = '\b';

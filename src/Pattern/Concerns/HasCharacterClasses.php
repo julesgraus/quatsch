@@ -7,6 +7,8 @@ use JulesGraus\Quatsch\Pattern\Enums\Type;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\Range;
 use function implode;
+use function is_int;
+use function is_string;
 use function strlen;
 
 trait HasCharacterClasses
@@ -16,8 +18,16 @@ trait HasCharacterClasses
     public function singleCharacterOf(...$characters): self
     {
         foreach ($characters as $character) {
-            if(strlen($character) !== 1) {
-                throw new InvalidArgumentException('Characters must be of length 1');
+            if(!is_string($character) && !is_int($character)) {
+                throw new InvalidArgumentException('Characters must be of type string or int');
+            }
+
+            if(is_int($character) && ($character < 0 || $character > 9)) {
+                throw new InvalidArgumentException('Digits must be between 0 and 9.');
+            }
+
+            if(is_string($character) && strlen($character) !== 1) {
+                throw new InvalidArgumentException('Characters must exactly one character long.');
             }
         }
 

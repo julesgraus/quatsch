@@ -67,7 +67,7 @@ trait HasGroups
          return $this;
     }
 
-    public function matchCaptured(string $name): Pattern
+    public function matchCaptured(string|int $name): Pattern
     {
         $this->subPatterns[] = self::stringToPattern(implode('', [
             "(",
@@ -83,9 +83,8 @@ trait HasGroups
 
     private static function nonCapturingGroupPattern(string|Pattern $pattern): Pattern
     {
-
         if($pattern instanceof Pattern) {
-            $pattern = $pattern->ownPattern;
+            $pattern = $pattern->patternToString($pattern);
         }
 
         return self::stringToPattern(
@@ -97,6 +96,10 @@ trait HasGroups
 
     private static function capturingGroupPattern(string|Pattern $pattern): Pattern
     {
+        if($pattern instanceof Pattern) {
+            $pattern = $pattern->patternToString($pattern);
+        }
+
         return self::stringToPattern(
             "($pattern)",
             "Isolates part of the full match to be later referred to by ID within the regex or the matches array. IDs start at 1. A common misconception is that repeating a capture group would create separate IDs for each time it matches. If that functionality is needed, one has to rely on the global (/g) flag instead.",
@@ -108,6 +111,10 @@ trait HasGroups
     {
         if(preg_match('/^\w+$/', $name) === 0) {
             throw new RuntimeException('The name must be alpha numeric and may contain an underscore. Nothing else.');
+        }
+
+        if($pattern instanceof Pattern) {
+            $pattern = $pattern->patternToString($pattern);
         }
 
         return self::stringToPattern(

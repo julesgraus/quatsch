@@ -17,7 +17,7 @@ readonly class Range
     {
     }
 
-    public static function make(int|string $start, int|string $end): self
+    public static function create(int|string $start, int|string $end): self
     {
         if(gettype($start) !== gettype($end)) {
             throw new InvalidArgumentException('Start and end must both be of type string or int.');

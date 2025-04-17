@@ -27,7 +27,7 @@ trait InspectsAndTestsPatterns
         $tableData = array_map(static function (Pattern $pattern) use ($subject, &$cumulative) {
             $cumulative .= $pattern->ownPattern;
 
-            $cumulativePatternPart = Pattern::instance()->then($cumulative);
+            $cumulativePatternPart = Pattern::create()->then($cumulative);
             $cumulativePatternPart->delimiter = $pattern->delimiter;
             $cumulativePatternPart->modifiers = $pattern->modifiers;
 

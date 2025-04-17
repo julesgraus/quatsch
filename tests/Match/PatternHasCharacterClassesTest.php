@@ -68,12 +68,12 @@ class PatternHasCharacterClassesTest extends TestCase
     public function test_character_in_range(): void
     {
         $this->assertMatchesRegularExpression(
-            Pattern::startsWith('a')->characterInRange(Range::make('x', 'z')),
+            Pattern::startsWith('a')->characterInRange(Range::create('x', 'z')),
             'ay'
         );
 
         $this->assertDoesNotMatchRegularExpression(
-            Pattern::startsWith('a')->characterInRange(Range::make('x', 'z')),
+            Pattern::startsWith('a')->characterInRange(Range::create('x', 'z')),
             'aw'
         );
     }
@@ -81,12 +81,12 @@ class PatternHasCharacterClassesTest extends TestCase
     public function test_starts_with_character_in_range(): void
     {
         $this->assertMatchesRegularExpression(
-            Pattern::startsWithCharacterInRange(Range::make('x', 'z')),
+            Pattern::startsWithCharacterInRange(Range::create('x', 'z')),
             'z'
         );
 
         $this->assertDoesNotMatchRegularExpression(
-            Pattern::startsWithCharacterInRange(Range::make('x', 'z')),
+            Pattern::startsWithCharacterInRange(Range::create('x', 'z')),
             'w'
         );
     }
@@ -94,12 +94,12 @@ class PatternHasCharacterClassesTest extends TestCase
     public function test_character_in_multiple_ranges(): void
     {
         $this->assertMatchesRegularExpression(
-            Pattern::startsWith('a')->characterInRange(Range::make('x', 'z'), Range::make('a', 'd')),
+            Pattern::startsWith('a')->characterInRange(Range::create('x', 'z'), Range::create('a', 'd')),
             'ab'
         );
 
         $this->assertDoesNotMatchRegularExpression(
-            Pattern::startsWith('a')->characterInRange(Range::make('x', 'z')),
+            Pattern::startsWith('a')->characterInRange(Range::create('x', 'z')),
             'aw'
         );
     }
