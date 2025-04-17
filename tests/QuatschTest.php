@@ -1,8 +1,9 @@
 <?php
 namespace JulesGraus\Quatsch\Tests;
 
-use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
+use JulesGraus\Quatsch\ExplainerFactory;
 use JulesGraus\Quatsch\Pattern\Pattern;
+use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Quatsch;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -11,6 +12,17 @@ use PHPUnit\Framework\TestCase;
 class QuatschTest extends TestCase {
     public function test_it_uses_tasks(): void
     {
+        $explainer = new ExplainerFactory()->make();
+
+        $pattern = Pattern::contains('bar')
+            ->singleCharacterOf(1, 2, 3)
+            ->times(2)
+            ->letter();
+
+        $explanation = $pattern->explainMatchUsing($explainer, 'bar14q');
+        die($explanation);
+
+
         $this->markTestSkipped();
 
         $errorPattern = Pattern::contains(Pattern::quote('['))

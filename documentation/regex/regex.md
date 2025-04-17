@@ -207,6 +207,9 @@ If you need help understanding the structure of a pattern, you can pass an **exp
 to the **explainUsing** method of the pattern. You can use the included ExplainerFactory to make an **explainer**.
 
 ```php
+use JulesGraus\Quatsch\ExplainerFactory;
+use JulesGraus\Quatsch\Pattern\Pattern;
+
 $explainer = new ExplainerFactory()->make();
 
 $pattern = Pattern::startsCaptureByName('foo','matches-foo')
@@ -239,6 +242,9 @@ pass the pattern an explainer using the **explainMatchUsing** method on the patt
 You can use the included **ExplainerFactory** to create an explainer. 
 
 ```php
+use JulesGraus\Quatsch\ExplainerFactory;
+use JulesGraus\Quatsch\Pattern\Pattern;
+
 $explainer = new ExplainerFactory()->make();
 
 $pattern = Pattern::contains('bar')
@@ -248,5 +254,21 @@ $pattern = Pattern::contains('bar')
 
 $explanation = $pattern->explainMatchUsing($explainer, 'bar14q');
 die($explanation);
+```
+
+The explanation is a multiline string that represents a table showing you up till where the pattern does match, 
+and from where it stops matching, indicating where you probably need to apply a fix. In this case, The 4 in **bar14q** 
+does not match because only the digits 1, 2 or 3 may match. It also shows if you build the pattern like this: **/bar[123]/**,
+it does match.
+
+```text
++---------------+--------------------------+----------------------------------+----------+
+| Pattern part  | Cumulative pattern part  | Matches Cumulative pattern part  | Matches  |
++---------------+--------------------------+----------------------------------+----------+
+| bar           | /bar/                    | true                             | bar      |
+| [123]         | /bar[123]/               | true                             | bar1     |
+| {2}           | /bar[123]{2}/            | false                            |          |
+| [a-zA-Z]      | /bar[123]{2}[a-zA-Z]/    | false                            |          |
++---------------+--------------------------+----------------------------------+----------+
 ```
 
