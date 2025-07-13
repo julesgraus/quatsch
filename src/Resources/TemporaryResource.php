@@ -2,23 +2,21 @@
 namespace JulesGraus\Quatsch\Resources;
 
 use InvalidArgumentException;
-use JulesGraus\Quatsch\Tasks\Enums\FileMode;
-use function fclose;
 use function fopen;
-use function is_resource;
 
-class FileResource implements QuatschResource
+class TemporaryResource implements QuatschResource
 {
     /**
      * @var resource
      */
     private $handle;
 
-    public function __construct(string $path, FileMode $mode)
+    public function __construct($megaBytesToKeepInMemoryBeforeCreatingTempFile = 2, $mode = 'a+b')
     {
-        $this->handle = fopen($path, $mode->value);
+        $bytes = $megaBytesToKeepInMemoryBeforeCreatingTempFile * 1000000;
+        $this->handle = fopen('php://temp/maxmemory:' . $bytes, $mode);
         if($this->handle === false) {
-            throw new InvalidArgumentException('File is not readable');
+            throw new InvalidArgumentException('Could not open temporary file.');
         }
     }
 
@@ -30,8 +28,8 @@ class FileResource implements QuatschResource
         return $this->handle;
     }
 
-
-    public function __destruct() {
+    public function __destruct()
+    {
         if(is_resource($this->handle)) {
             fclose($this->handle);
         }

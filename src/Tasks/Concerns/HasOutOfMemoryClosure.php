@@ -8,7 +8,7 @@ trait HasOutOfMemoryClosure
 {
     protected Closure $outOfMemoryClosure;
 
-    public function whenOutOfMemoryDo(Closure $outOfMemory): static
+    public function whenOutOfMemoryDo(Closure $outOfMemory): self
     {
         $this->outOfMemoryClosure = $outOfMemory;
         return $this;

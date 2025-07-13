@@ -114,9 +114,9 @@ trait HasAnchors
         return $this;
     }
 
-    public function then(string|Pattern $patern): self
+    public function then(string|Pattern $pattern): self
     {
-        $this->subPatterns[] = self::stringToPattern($patern, 'match', Type::THEN);
+        $this->subPatterns[] = self::stringToPattern($pattern, 'match', Type::THEN);
         return $this;
     }
 

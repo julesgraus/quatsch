@@ -4,101 +4,121 @@ namespace JulesGraus\Quatsch\Tasks;
 
 use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
-use JulesGraus\Quatsch\Pattern\Enums\Type;
 use JulesGraus\Quatsch\Pattern\Pattern;
+use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use RuntimeException;
 use function feof;
 use function fread;
 use function fwrite;
-use function in_array;
 use function preg_match;
 use function preg_match_all;
-use function rewind;
-use function str_contains;
 use const PHP_EOL;
 
 class ExtractTask extends Task
 {
+    /**
+     * @param string|Pattern $patternToExtract
+     * @param QuatschResource $outputResource
+     * @param StringPatternInspector $stringPatternInspector
+     * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption
+     * @param int $maximumExpectedMatchLength Must be at least the size of the maximum expected match. If it's to low, it will not find your pattern. If it is bigger, it will consume more memory than necessary
+     * @param string $matchSeparator
+     */
     public function __construct(
-        private readonly string|Pattern  $patternToExtract,
-        private readonly QuatschResource $outputResource,
-        private readonly int             $chunkSizeInBytes = 128
-    ) {
+        private readonly string|Pattern         $patternToExtract,
+        private readonly QuatschResource        $outputResource,
+        private readonly StringPatternInspector $stringPatternInspector,
+        private readonly int                    $chunkSize = 128,
+        private readonly int                    $maximumExpectedMatchLength = 512,
+        private readonly string                 $matchSeparator = PHP_EOL
+    )
+    {
 
     }
 
-    public function run(QuatschResource|null $resource = null): QuatschResource
+    public
+    function run(?QuatschResource $inputResource = null): QuatschResource
     {
-        if($resource === null) {
+        if ($inputResource === null) {
             throw new InvalidArgumentException('Resource must not be null.');
         }
 
-        rewind($resource->getHandle());
+        $overlapSize = $this->maximumExpectedMatchLength <= $this->chunkSize ? 0 : $this->maximumExpectedMatchLength - $this->chunkSize;
 
-        $readUntilTheEndOfTheFileAndThenTryToMatch = false;
-        if(in_array(Type::ABSOLUTE_END_OF_STRING, $this->patternToExtract->getAllTypes(), true)) {
-            $readUntilTheEndOfTheFileAndThenTryToMatch = true;
-        } elseif(
-            in_array(Type::MULTILINE_END_OF_STRING, $this->patternToExtract->getAllTypes(), true) &&
-            in_array(RegexModifier::MULTILINE, $this->patternToExtract->getModifiers(), true)
-        ) {
-            $readUntilTheEndOfTheFileAndThenTryToMatch = true;
+        $this->logger?->debug('Processing sizes: ', [
+            'maximumExpectedMatchLength' => $this->maximumExpectedMatchLength,
+            'chunkSize' => $this->chunkSize,
+            'overlapSize' => $overlapSize,
+        ]);;
+
+        if ($this->chunkSize + $overlapSize > $this->maximumExpectedMatchLength) {
+            throw new InvalidArgumentException('The overlap size plus the chunk size cannot be greater than the maximum expected match length. Adjust your chunk size or maximum expected match length');
         }
 
-        $readUntilEndOfLineAndThenTryToMatch = false;
-        if(
-            in_array(Type::MULTILINE_END_OF_STRING, $this->patternToExtract->getAllTypes(), true) &&
-            !in_array(RegexModifier::MULTILINE, $this->patternToExtract->getModifiers(), true)
-        ) {
-            $readUntilEndOfLineAndThenTryToMatch = true;
-        }
-
-        $readBuffer = '';
-        while (true) {
-            if (!$this->itIsSafeToReadAnAdditionalBytes($this->chunkSizeInBytes)) {
+        $previousChunkTail = '';
+        $bytesRead = 0;
+        $lastMatchEndOffset = null;
+        while (!feof($inputResource->getHandle())) {
+            if (!$this->itIsSafeToReadAnAdditionalSpecifiedAmountOfBytes($this->chunkSize) && isset($this->outOfMemoryClosure)) {
                 ($this->outOfMemoryClosure)();
-                return $this->outputResource;
+                break;
             }
 
-            $chunk = fread($resource->getHandle(), $this->chunkSizeInBytes);
-            if ($chunk === false) {
-                return $this->outputResource;
+            if($this->stringPatternInspector->hasModifier((string) $this->patternToExtract,'m') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$this->patternToExtract), '$')) {
+                $chunk = fgets($inputResource->getHandle(), $this->maximumExpectedMatchLength);
+            } else {
+                $chunk = fread($inputResource->getHandle(), $this->chunkSize);
             }
 
-            $readBuffer .= $chunk;
+            $buffer = '';
+            if($chunk !== false) {
+                $bytesRead += strlen($chunk);;
+                $buffer = $previousChunkTail . $chunk;
+            }
 
-            if ($readUntilEndOfLineAndThenTryToMatch && str_contains($readBuffer, "\n") && preg_match((string) $this->patternToExtract, $readBuffer, $pregMatches)) {
-                if(fwrite($this->outputResource->getHandle(), $pregMatches[0].PHP_EOL) === false) {
-                    throw new RuntimeException('Failed to write to the resource.');
+            $this->logger?->debug('ExtractTask: Buffered data: ', ['chunk tail length' => strlen($previousChunkTail), 'buffer length' => strlen($buffer), 'previousChunkTail' => $previousChunkTail, 'chunk' => $chunk, 'buffer' => $buffer]);
+
+            if ($this->patternToExtract instanceof Pattern && $this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
+                if (preg_match_all((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+                    $this->process_matches($matches, $bytesRead, strlen($buffer), $lastMatchEndOffset);;
                 }
-                return $this->outputResource;
-            }
-
-            if(!$readUntilTheEndOfTheFileAndThenTryToMatch && !$readUntilEndOfLineAndThenTryToMatch && preg_match((string) $this->patternToExtract, $readBuffer, $pregMatches)) {
-                if(fwrite($this->outputResource->getHandle(), $pregMatches[0].PHP_EOL) === false) {
-                    throw new RuntimeException('Failed to write to the resource.');
+            } else {
+                if (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+                    $this->process_matches([$matches], $bytesRead, strlen($buffer), $lastMatchEndOffset);
+                    //There no global modifier supported in regular php regex strings.
+                    //So definitely break the while loop after the first match.
+                    break;
                 }
-
-                $readBuffer = '';
             }
 
-            if($chunk === '' || feof($resource->getHandle())) {
-                if($this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
-                    $doesMatch = preg_match_all((string) $this->patternToExtract, $readBuffer, $pregMatches);
-                    if($doesMatch) {
-                        $pregMatches[0] = implode(PHP_EOL, $pregMatches[0]);
+            $previousChunkTail = substr($buffer, -($this->chunkSize + $overlapSize));;
+            $matches = null;
+        }
+
+        return $this->outputResource;
+    }
+
+    /**
+     * @param array<int, array{0: string, 1: int}> $matches
+     */
+    private function process_matches(array $matches, int $bytesRead, $bufferLength, int|null &$lastMatchEndOffset): void
+    {
+        foreach ($matches as $matchesCollection) {
+            foreach($matchesCollection as $matchData) {
+                $match = $matchData[0];
+                $matchOffset = (int)$matchData[1];
+                $foundAtPositionInFile = $bytesRead - $bufferLength + $matchOffset;
+
+                if ($lastMatchEndOffset === null || $foundAtPositionInFile > $lastMatchEndOffset) {
+                    $this->logger?->info('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile]);
+                    if (fwrite($this->outputResource->getHandle(), $match . $this->matchSeparator) === false) {
+                        throw new RuntimeException('Failed to write to the resource.');
                     }
                 } else {
-                    $doesMatch = preg_match((string) $this->patternToExtract, $readBuffer, $pregMatches);
+                    $this->logger?->debug('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile . ' (skipping because already found earlier)']);
                 }
-
-                if($readUntilTheEndOfTheFileAndThenTryToMatch && $doesMatch && fwrite($this->outputResource->getHandle(), $pregMatches[0].PHP_EOL) === false) {
-                    throw new RuntimeException('Could not write to the resource.');
-                }
-
-                rewind($this->outputResource->getHandle());
-                return $this->outputResource;
+                $lastMatchEndOffset = $foundAtPositionInFile;
             }
         }
     }

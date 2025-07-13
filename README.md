@@ -33,3 +33,10 @@ Tasks can also load and store your extracted data from local and external source
 - [Fluent Regexes](./documentation/regex/regex.md)
 
 
+## Troubleshooting
+### I try to extract patterns up till the end of the line, but it stops earlier than the end of the line.
+_Possible solition 1:_
+When the chunk size is set to the length of half of a line you are trying to extract, it will see the end of the chunk
+as the end of the line. Just choose a chunk length, bigger than the longest line of your file.
+
+

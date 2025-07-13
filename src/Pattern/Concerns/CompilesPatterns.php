@@ -133,6 +133,13 @@ trait CompilesPatterns
         return $this->modifiers;
     }
 
+    public function getModifiersAsString(): string
+    {
+        return implode('', array_map(function(RegexModifier $modifier) {
+            return $modifier->value;
+        }, $this->modifiers));
+    }
+
     public function hasModifier(RegexModifier $modifier): bool
     {
         return in_array($modifier, $this->modifiers, true);

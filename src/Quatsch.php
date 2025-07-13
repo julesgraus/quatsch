@@ -36,15 +36,28 @@ final class Quatsch
         return $this;
     }
 
-    public function extractFullMatches(string|Pattern $pattern): Quatsch
+    public function extractFullMatches(
+        string|Pattern $pattern,
+        int $maximumExpectedMatchLength,
+        int $chunkSize,
+    ): Quatsch
     {
-        $this->addTask($this->taskFactory->makeExtractIntoMemoryTask($pattern));
+        $this->addTask($this->taskFactory->makeExtractIntoMemoryTask(
+            pattern: $pattern,
+            maximumExpectedMatchLength: $maximumExpectedMatchLength,
+            chunkSize: $chunkSize));
         return $this;
     }
 
-    public function appendToFile(string $string): Quatsch
+    public function appendToFile(string $path): Quatsch
     {
-        $this->addTask($this->taskFactory->makeFileTask($string, FileMode::APPEND));
+        $this->addTask($this->taskFactory->makeFileTask($path, FileMode::APPEND));
+        return $this;
+    }
+
+    public function outputToStdOut(): Quatsch
+    {
+        $this->addTask($this->taskFactory->makeStdOutTask());
         return $this;
     }
 

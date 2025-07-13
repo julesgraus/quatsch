@@ -15,7 +15,7 @@ use JulesGraus\Quatsch\Pattern\Concerns\InspectsAndTestsPatterns;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Enums\Type;
 
-#[AllowDynamicProperties] final class Pattern
+class Pattern
 {
     use CompilesPatterns;
     use HasQuantifiers;

@@ -5,11 +5,20 @@ namespace JulesGraus\Quatsch\Tasks;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Tasks\Concerns\HasOutOfMemoryClosure;
 use JulesGraus\Quatsch\Tasks\Concerns\KeepsTrackOfMemoryConsumption;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
-abstract class Task
+abstract class Task implements LoggerAwareInterface
 {
     use HasOutOfMemoryClosure;
     use KeepsTrackOfMemoryConsumption;
 
-    abstract public function run(QuatschResource|null $resource = null): QuatschResource;
+    protected LoggerInterface|null $logger = null;
+
+    abstract public function run(QuatschResource|null $inputResource = null): QuatschResource;
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
 }

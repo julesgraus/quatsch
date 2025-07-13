@@ -14,17 +14,6 @@ class QuatschTest extends TestCase {
     {
         $explainer = new ExplainerFactory()->make();
 
-        $pattern = Pattern::contains('bar')
-            ->singleCharacterOf(1, 2, 3)
-            ->times(2)
-            ->letter();
-
-        $explanation = $pattern->explainMatchUsing($explainer, 'bar14q');
-        die($explanation);
-
-
-        $this->markTestSkipped();
-
         $errorPattern = Pattern::contains(Pattern::quote('['))
             ->digit()->times(4)
             ->then('-')
@@ -43,12 +32,16 @@ class QuatschTest extends TestCase {
             ->addModifier(RegexModifier::MULTILINE)
             ->addModifier(RegexModifier::GLOBAL);
 
+//        $explanation = $errorPattern->explainMatchUsing($explainer, '[2024-09-11 22:57:45] local.ERROR: App\Foo\ViewModels\FooReportChartData::determineOptions(): Argument #1 ($firstFooReport) must be of type App\Foo\Models\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 {"view":{"view":"/var/www/html/resources/views/Foo_reports/form.blade.php","data":[]},"userId":"9cfc8d1c-8c73-4c1f-99c8-31dfe7bd187f","exception":"[object] (Spatie\\LaravelIgnition\\Exceptions\\ViewException(code: 0): App\\Foo\\ViewModels\\FooReportChartData::determineOptions(): Argument #1 ($firstFooReport) must be of type App\\Foo\\Models\\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 at /var/www/html/app/Foo/ViewModels/FooReportChartData.php:97)');
+//        var_dump($explanation);
+//        die();
+
         //Note, the code below DOES work. Quatsch class needs to use a pipeline pattern class inside in the near future.
-        //Task and extraction logic needs to be testedw
+        //Task and extraction logic need to be tested
         new Quatsch()
             ->openFile(__DIR__ . '/fixtures/laravel.log')
-            ->extractFullMatches($errorPattern)
-            ->appendToFile(__DIR__ . '/output.txt')
+            ->extractFullMatches($errorPattern, 1000, 40)
+            ->outputToStdOut()
             ->start();
     }
 

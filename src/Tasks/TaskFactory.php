@@ -3,16 +3,22 @@
 namespace JulesGraus\Quatsch\Tasks;
 
 use JulesGraus\Quatsch\Pattern\Pattern;
-use JulesGraus\Quatsch\Resources\MemoryResource;
+use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
+use JulesGraus\Quatsch\Resources\FileResource;
+use JulesGraus\Quatsch\Resources\StdOutResource;
+use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
 
 class TaskFactory
 {
-    public function makeFileTask(string $path, FileMode $mode): FileTask
+    public function makeFileTask(string $path, FileMode $mode): CopyResourceTask
     {
-        return new FileTask(
-            path: $path,
-            mode: $mode
+        return new CopyResourceTask(
+            outputResource: new FileResource($path, $mode)
         );
     }
 
@@ -21,11 +27,37 @@ class TaskFactory
         return new MemoryTask($megaBytesToKeepInMemoryBeforeCreatingTempFile);
     }
 
-    public function makeExtractIntoMemoryTask(Pattern|string $pattern, int $megaBytesToKeepInMemoryBeforeCreatingTempFile = 2): ExtractTask
+    public function makeStdOutTask(): CopyResourceTask
     {
-        return new ExtractTask(
-            $pattern,
-            new MemoryResource($megaBytesToKeepInMemoryBeforeCreatingTempFile)
+        return new CopyResourceTask(
+            outputResource: new StdOutResource()
         );
+    }
+
+    public function makeExtractIntoMemoryTask(
+        Pattern|string $pattern,
+        int $maximumExpectedMatchLength,
+        int $chunkSize,
+        int $megaBytesToKeepInMemoryBeforeCreatingTempFile = 2,
+        string $matchSeparator = PHP_EOL
+    ): ExtractTask
+    {
+        $task = new ExtractTask(
+            patternToExtract: $pattern,
+            outputResource: new TemporaryResource($megaBytesToKeepInMemoryBeforeCreatingTempFile),
+            stringPatternInspector: new StringPatternInspector(),
+            chunkSize: $chunkSize,
+            maximumExpectedMatchLength: $maximumExpectedMatchLength,
+            matchSeparator: $matchSeparator
+        );
+
+//        $task->setLogger(
+//            new Logger('extractIntroMemoryTask')->pushHandler(new StreamHandler(
+//                'php://stdout',
+//                Level::Info
+//            ))
+//        );
+
+        return $task;
     }
 }
