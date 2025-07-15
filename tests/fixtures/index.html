@@ -1,43 +1,96 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document</title>
+    <meta name="description" content="A test HTML for regex">
+    <meta name="keywords" content="HTML, regex, test, sample">
+    <meta name="author" content="AI Assistant">
+    <title>Regex Test HTML</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
 </head>
 <body>
-    <h1>A sample HTML page to test some regex patterns on</h1>
-    <p>This is a paragraph</p>
+<header>
+    <h1>Welcome to the Regex Test Page</h1>
     <nav>
         <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#section1">Section 1</a></li>
+            <li><a href="#section2">Section 2</a></li>
+            <li><a href="#form">Form</a></li>
         </ul>
     </nav>
-    <main>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Commodi dolorum eum facilis laboriosam laborum non officia possimus sapiente. Dolore, dolorem dolorum et explicabo fugit incidunt iusto molestiae odit placeat reprehenderit!
-            <aside>lorem ipsum</aside>
-        </p>
-        <div id="popular_posts">
-            <article class="post">
-                <h2>A sample <b>bold</b> post</h2>
-                <p>This is a sample post</p>
-            </article>
-            <article class="post">
-                <ul>
-                    <li>This is a list item</li>
-                    <li>This is a another list item</li>
-                    <li>list item 3</li>
-                </ul>
-            </article>
-            <article class="post">
-                <h2>Another sample <b>post</b></h2>
-                <p>This is another sample post</p>
-            </article>
-        </div>
-    </main>
+</header>
 
+<section id="section1">
+    <h2>Section 1: Nested Structure</h2>
+    <div class="container">
+        <p>This is a <strong>sample</strong> paragraph with <a href="https://example.com">a link</a>.</p>
+        <div class="nested">
+            <ul>
+                <li>List item <i>with italic</i></li>
+                <li>Another <span style="color: red;">colored</span> list item</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="section2">
+    <h2>Section 2: Repetitive Patterns</h2>
+    <p>Phone numbers:</p>
+    <ul>
+        <li>+1-800-555-1234</li>
+        <li>+44 12 345 6789</li>
+        <li>+91-(555)-789-4561</li>
+    </ul>
+    <p>Email addresses:</p>
+    <ul>
+        <li>test@example.com</li>
+        <li>user.name@subdomain.example.org</li>
+        <li>invalid-email-example.com</li>
+    </ul>
+    <p>Dates:</p>
+    <ul>
+        <li>2025-07-14</li>
+        <li>14/07/2025</li>
+        <li>July 14, 2025</li>
+    </ul>
+</section>
+
+<section id="form">
+    <h2>Section 3: Form Elements</h2>
+    <form method="POST" action="/submit">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your name">
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email">
+        <br>
+        <label>Gender:</label>
+        <input type="radio" id="male" name="gender" value="male">
+        <label for="male">Male</label>
+        <input type="radio" id="female" name="gender" value="female">
+        <label for="female">Female</label>
+        <br>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</section>
+
+<footer>
+    <p>&copy; 2025 Regex Test HTML</p>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+</footer>
+
+<!-- Comments and special cases -->
+<div>
+    <!-- This is a comment -->
+    <![CDATA[
+    <p>This is a CDATA section</p>
+    ]]>
+    <script>alert("Testing JS Regex");</script>
+</div>
 </body>
 </html>

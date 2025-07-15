@@ -1,0 +1,140 @@
+<?php
+
+namespace JulesGraus\Quatsch\Tests\Tasks;
+
+use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
+use JulesGraus\Quatsch\Pattern\Pattern;
+use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\Resources\TemporaryResource;
+use JulesGraus\Quatsch\Tasks\ExtractTask;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(ExtractTask::class)]
+class ExtractTaskFeatureTest extends TestCase
+{
+    #[Test]
+    public function it_parses_log_files() {
+        $errorPattern = Pattern::contains(Pattern::quote('['))
+            ->digit()->times(4)
+            ->then('-')
+            ->digit()->times(2)
+            ->then('-')
+            ->digit()->times(2)
+            ->then(' ')
+            ->digit()->times(2)
+            ->then(':')
+            ->digit()->times(2)
+            ->then(':')
+            ->digit()->times(2)
+            ->then(Pattern::quote(']'))
+            ->singleCharacter()->oneOrMoreTimes()
+            ->multiLineEndOfString()
+            ->addModifier(RegexModifier::MULTILINE)
+            ->addModifier(RegexModifier::GLOBAL);
+
+        $inputResource = new TemporaryResource();
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/laravel.log'));
+        rewind($inputResource->getHandle());
+
+        $outputResource = new TemporaryResource();
+
+        $task = new ExtractTask(
+            patternToExtract: $errorPattern,
+            outputResource: $outputResource,
+            stringPatternInspector: new StringPatternInspector(),
+            chunkSize: 20,
+            maximumExpectedMatchLength: 1000
+        );
+
+        $task->setMaxMemoryConsumption(15000);
+        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . 'B)');
+        });
+
+        $task->run($inputResource);
+        rewind($outputResource->getHandle());
+
+
+        self::assertEquals(<<<EXPECTED
+        [2024-09-11 22:57:43] local.ERROR: App\\Foo\\ViewModels\\FooReportChartData::determineOptions(): Argument #1 (\$firstFooReport) must be of type App\\Foo\\Models\\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 {"view":{"view":"/var/www/html/resources/views/Foo_reports/form.blade.php","data":[]},"userId":"9cfc8d1c-8c73-4c1f-99c8-31dfe7bd187f","exception":"[object] (Spatie\\\\LaravelIgnition\\\\Exceptions\\\\ViewException(code: 0): App\\\\Foo\\\\ViewModels\\\\FooReportChartData::determineOptions(): Argument #1 (\$firstFooReport) must be of type App\\\\Foo\\\\Models\\\\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 at /var/www/html/app/Foo/ViewModels/FooReportChartData.php:97)
+        [2024-09-11 22:57:45] local.ERROR: App\\Foo\\ViewModels\\FooReportChartData::determineOptions(): Argument #1 (\$firstFooReport) must be of type App\\Foo\\Models\\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 {"view":{"view":"/var/www/html/resources/views/Foo_reports/form.blade.php","data":[]},"userId":"9cfc8d1c-8c73-4c1f-99c8-31dfe7bd187f","exception":"[object] (Spatie\\\\LaravelIgnition\\\\Exceptions\\\\ViewException(code: 0): App\\\\Foo\\\\ViewModels\\\\FooReportChartData::determineOptions(): Argument #1 (\$firstFooReport) must be of type App\\\\Foo\\\\Models\\\\FooReport, null given, called in /var/www/html/app/Foo/ViewModels/FooReportChartData.php on line 27 at /var/www/html/app/Foo/ViewModels/FooReportChartData.php:97)\n
+        EXPECTED, stream_get_contents($outputResource->getHandle()));
+    }
+
+    #[Test]
+    public function it_parses_html_files_efficiently() {
+        $unOrderedLists = Pattern::contains('<ul')
+            ->wordBoundary()
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+            ->then('>')
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+            ->then('<')
+            ->then(Pattern::quote('/'))
+            ->then('ul')
+            ->then('>')
+            ->addModifier(RegexModifier::DOT_ALL)
+            ->addModifier(RegexModifier::MULTILINE)
+            ->addModifier(RegexModifier::GLOBAL);
+
+        $inputResource = new TemporaryResource();
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/index.html'));
+        rewind($inputResource->getHandle());
+
+        $outputResource = new TemporaryResource();
+
+        $task = new ExtractTask(
+            patternToExtract: $unOrderedLists,
+            outputResource: $outputResource,
+            stringPatternInspector: new StringPatternInspector(),
+            chunkSize: 20,
+            maximumExpectedMatchLength: 200,
+            matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
+        );
+
+        $task->setMaxMemoryConsumption(10000);
+        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
+        });
+
+        $task->run($inputResource);
+        rewind($outputResource->getHandle());
+
+        $this->assertEquals(<<<EXPECTED
+        <ul>
+                    <li><a href="#section1">Section 1</a></li>
+                    <li><a href="#section2">Section 2</a></li>
+                    <li><a href="#form">Form</a></li>
+                </ul>
+        ------------------------------------
+        <ul>
+                        <li>List item <i>with italic</i></li>
+                        <li>Another <span style="color: red;">colored</span> list item</li>
+                    </ul>
+        ------------------------------------
+        <ul>
+                <li>+1-800-555-1234</li>
+                <li>+44 12 345 6789</li>
+                <li>+91-(555)-789-4561</li>
+            </ul>
+        ------------------------------------
+        <ul>
+                <li>test@example.com</li>
+                <li>user.name@subdomain.example.org</li>
+                <li>invalid-email-example.com</li>
+            </ul>
+        ------------------------------------
+        <ul>
+                <li>2025-07-14</li>
+                <li>14/07/2025</li>
+                <li>July 14, 2025</li>
+            </ul>
+        ------------------------------------
+
+        EXPECTED
+        , stream_get_contents($outputResource->getHandle()));
+    }
+}

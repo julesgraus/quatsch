@@ -40,6 +40,8 @@ class ExtractTask extends Task
     public
     function run(?QuatschResource $inputResource = null): QuatschResource
     {
+        $this->setBaselineMemoryConsumption();
+
         if ($inputResource === null) {
             throw new InvalidArgumentException('Resource must not be null.');
         }
@@ -60,8 +62,7 @@ class ExtractTask extends Task
         $bytesRead = 0;
         $lastMatchEndOffset = null;
         while (!feof($inputResource->getHandle())) {
-            if (!$this->itIsSafeToReadAnAdditionalSpecifiedAmountOfBytes($this->chunkSize) && isset($this->outOfMemoryClosure)) {
-                ($this->outOfMemoryClosure)();
+            if (!$this->itIsSafeToReadAnAdditionalSpecifiedAmountOfBytes($this->chunkSize)) {
                 break;
             }
 
