@@ -4,10 +4,12 @@ namespace JulesGraus\Quatsch\Tests\Resources;
 
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+#[CoversClass(OutputRedirector::class)]
 class OutputRedirectorTest extends TestCase
 {
     #[Test]
