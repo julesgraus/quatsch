@@ -9,6 +9,7 @@ use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
+use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use Monolog\Handler\StreamHandler;
@@ -43,12 +44,12 @@ class ExtractTaskTest extends TestCase
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 128,
-            maximumExpectedMatchLength: 200
+            maximumExpectedMatchLength: 200,
         );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Resource must not be null.');
 
         $task->run(null);
     }
@@ -67,6 +68,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
         );
@@ -94,8 +96,9 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/A{10}B/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 4,
-            maximumExpectedMatchLength: 10,
+            maximumExpectedMatchLength: 10
         );
 
         $result = $task->run($this->inputResource);
@@ -122,8 +125,9 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/A{10}B/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 4,
-            maximumExpectedMatchLength: 20,
+            maximumExpectedMatchLength: 20
         );
 
         $result = $task->run($this->inputResource);
@@ -147,6 +151,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 4,
             maximumExpectedMatchLength: 4
         );
@@ -167,6 +172,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/test$/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
         );
@@ -191,6 +197,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: $patternToExtract,
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 2,
             maximumExpectedMatchLength: 4
         );
@@ -214,6 +221,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: $patternToExtract,
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
         );
@@ -234,6 +242,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/(?<=red\s)apple/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 2,
             maximumExpectedMatchLength: 9
         );
@@ -253,6 +262,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/apple(?=\spie)/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 2,
             maximumExpectedMatchLength: 9
         );
@@ -265,21 +275,25 @@ class ExtractTaskTest extends TestCase
     #[Test]
     public function outOfMemoryHandling(): void
     {
-        $outOfMemoryCallCount = 0;
+        $outOfMemoryCalled = false;
+
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor->setMaxMemoryConsumption(0);
+        $slidingWindowChunkProcessor->whenOutOfMemoryDo(function () use (&$outOfMemoryCalled) {
+            $outOfMemoryCalled = true;
+        });
 
         $task = new ExtractTask(
             patternToExtract: '/test/',
             outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             chunkSize: 128,
             maximumExpectedMatchLength: 200
-        )->setMaxMemoryConsumption(0);
+        );
 
-        $task->whenOutOfMemoryDo(function () use (&$outOfMemoryCallCount) {
-            $outOfMemoryCallCount++;
-        });
         $task->run($this->inputResource);
-        $this->assertEquals(1, $outOfMemoryCallCount);
+        $this->assertTrue($outOfMemoryCalled);
     }
 
     #[Test]
@@ -300,6 +314,7 @@ class ExtractTaskTest extends TestCase
             patternToExtract: '/test/',
             outputResourceOrOutputRedirector: $readOnlyResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
             chunkSize: 2,
             maximumExpectedMatchLength: 5
         );

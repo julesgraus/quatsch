@@ -26,7 +26,7 @@ trait KeepsTrackOfMemoryConsumption
     protected function getMemoryLimit(): int
     {
         $phpMemoryLimitInBytes = ini_parse_quantity(ini_get('memory_limit'));
-        if($this->maxMemoryConsumption !== null) {
+        if ($this->maxMemoryConsumption !== null) {
             return min($this->maxMemoryConsumption, $phpMemoryLimitInBytes);
         }
 
@@ -35,22 +35,22 @@ trait KeepsTrackOfMemoryConsumption
 
     protected function itIsSafeToReadAnAdditionalSpecifiedAmountOfBytes(int $bytes): bool
     {
-        if($this->baselineMemoryConsumption === null) {
+        if ($this->baselineMemoryConsumption === null) {
             throw new RuntimeException('No baseline memory consumption set. Please set it with setBaselineMemoryConsumption');
         }
 
-        $memoryUsage = memory_get_usage();
-         if($memoryUsage + $bytes - $this->baselineMemoryConsumption < $this->getMemoryLimit() === false)
-         {
-             if(isset($this->outOfMemoryClosure)) {
-                 ($this->outOfMemoryClosure)(
-                     round($this->getMemoryLimit() / 1024 / 1024, 2),
-                     $this->getMemoryLimit()
-                 );
-             }
-             return false;
-         }
 
-         return true;
+        $memoryUsage = memory_get_usage();
+        if ($memoryUsage + $bytes - $this->baselineMemoryConsumption > $this->getMemoryLimit()) {
+            if (isset($this->outOfMemoryClosure)) {
+                ($this->outOfMemoryClosure)(
+                    round($this->getMemoryLimit() / 1024 / 1024, 2),
+                    $this->getMemoryLimit()
+                );
+            }
+            return false;
+        }
+
+        return true;
     }
 }

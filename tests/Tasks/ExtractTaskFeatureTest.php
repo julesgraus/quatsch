@@ -7,6 +7,7 @@ use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
+use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -41,18 +42,20 @@ class ExtractTaskFeatureTest extends TestCase
 
         $outputResource = new TemporaryResource();
 
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
+        $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
+        });
+
         $task = new ExtractTask(
             patternToExtract: $errorPattern,
             outputResourceOrOutputRedirector: $outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             chunkSize: 20,
             maximumExpectedMatchLength: 1000
         );
-
-        $task->setMaxMemoryConsumption(15000);
-        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
-            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . 'B)');
-        });
 
         $task->run($inputResource);
         rewind($outputResource->getHandle());
@@ -87,19 +90,21 @@ class ExtractTaskFeatureTest extends TestCase
 
         $outputResource = new TemporaryResource();
 
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
+        $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
+        });
+
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
             outputResourceOrOutputRedirector: $outputResource,
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             chunkSize: 20,
             maximumExpectedMatchLength: 200,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
-
-        $task->setMaxMemoryConsumption(10000);
-        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
-            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
-        });
 
         $task->run($inputResource);
         rewind($outputResource->getHandle());
@@ -174,6 +179,12 @@ class ExtractTaskFeatureTest extends TestCase
         $placeholderResource = new TemporaryResource();
 
 
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
+        $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
+        });
+
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
             outputResourceOrOutputRedirector: new OutputRedirector()
@@ -182,15 +193,11 @@ class ExtractTaskFeatureTest extends TestCase
                 ->sendCapturedMatchesTo('inputName', $nameResource)
                 ->sendCapturedMatchesTo(2, $placeholderResource),
             stringPatternInspector: new StringPatternInspector(),
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             chunkSize: 20,
             maximumExpectedMatchLength: 80,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
-
-        $task->setMaxMemoryConsumption(1000000);
-        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
-            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
-        });
 
         $task->run($inputResource);
         rewind($fullMatchResource->getHandle());

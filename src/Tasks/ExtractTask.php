@@ -8,9 +8,8 @@ use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
+use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
 use RuntimeException;
-use function feof;
-use function fread;
 use function fwrite;
 use function preg_match;
 use function preg_match_all;
@@ -18,6 +17,8 @@ use const PHP_EOL;
 
 class ExtractTask extends Task
 {
+    private int|null $lastMatchEndOffset = null;
+
     /**
      * @param string|Pattern $patternToExtract
      * @param QuatschResource|OutputRedirector $outputResourceOrOutputRedirector
@@ -30,9 +31,10 @@ class ExtractTask extends Task
         private readonly string|Pattern                   $patternToExtract,
         private readonly QuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
         private readonly StringPatternInspector           $stringPatternInspector,
+        private readonly SlidingWindowChunkProcessor      $slidingWindowChunkProcessor,
         private readonly int                              $chunkSize = 128,
         private readonly int                              $maximumExpectedMatchLength = 512,
-        private readonly string                           $matchSeparator = PHP_EOL
+        private readonly string                           $matchSeparator = PHP_EOL,
     )
     {
 
@@ -41,64 +43,39 @@ class ExtractTask extends Task
     public
     function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
     {
-        $this->setBaselineMemoryConsumption();
-
-        if ($inputResource === null) {
-            throw new InvalidArgumentException('Resource must not be null.');
+        if($inputResource === null) {
+            throw new InvalidArgumentException('Input resource is required');
         }
 
-        $overlapSize = $this->maximumExpectedMatchLength <= $this->chunkSize ? 0 : $this->maximumExpectedMatchLength - $this->chunkSize;
-
-        $this->logger?->debug('Processing sizes: ', [
-            'maximumExpectedMatchLength' => $this->maximumExpectedMatchLength,
-            'chunkSize' => $this->chunkSize,
-            'overlapSize' => $overlapSize,
-        ]);;
-
-        if ($this->chunkSize + $overlapSize > $this->maximumExpectedMatchLength) {
-            throw new InvalidArgumentException('The overlap size plus the chunk size cannot be greater than the maximum expected match length. Adjust your chunk size or maximum expected match length');
-        }
-
-        $previousChunkTail = '';
-        $bytesRead = 0;
-        $lastMatchEndOffset = null;
-        while (!feof($inputResource->getHandle())) {
-            if (!$this->itIsSafeToReadAnAdditionalSpecifiedAmountOfBytes($this->chunkSize)) {
-                break;
-            }
-
-            if ($this->stringPatternInspector->hasModifier((string)$this->patternToExtract, 'm') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$this->patternToExtract), '$')) {
-                $chunk = fgets($inputResource->getHandle(), $this->maximumExpectedMatchLength);
-            } else {
-                $chunk = fread($inputResource->getHandle(), $this->chunkSize);
-            }
-
-            $buffer = '';
-            if ($chunk !== false) {
-                $bytesRead += strlen($chunk);;
-                $buffer = $previousChunkTail . $chunk;
-            }
-
-            $this->logger?->debug('ExtractTask: Buffered data: ', ['chunk tail length' => strlen($previousChunkTail), 'buffer length' => strlen($buffer), 'previousChunkTail' => $previousChunkTail, 'chunk' => $chunk, 'buffer' => $buffer]);
-
-            if ($this->patternToExtract instanceof Pattern && $this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
-                if (preg_match_all((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                    $this->process_matches($matches, $bytesRead, strlen($buffer), $lastMatchEndOffset);;
-                }
-            } else {
-                if (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                    $this->process_matches([$matches], $bytesRead, strlen($buffer), $lastMatchEndOffset);
-                    //There no global modifier supported in regular php regex strings.
-                    //So definitely break the while loop after the first match.
-                    break;
-                }
-            }
-
-            $previousChunkTail = substr($buffer, -($this->chunkSize + $overlapSize));;
-            $matches = null;
-        }
+        ($this->slidingWindowChunkProcessor)(
+            inputResource: $inputResource,
+            outputResource: $this->outputResourceOrOutputRedirector,
+            pattern: $this->patternToExtract,
+            maximumExpectedMatchLength: $this->maximumExpectedMatchLength,
+            chunkSize: $this->chunkSize,
+            stringPatternInspector: $this->stringPatternInspector,
+            onData: $this->onData(...)
+        );
 
         return $this->outputResourceOrOutputRedirector;
+    }
+
+    private function onData(string $buffer, int $bytesRead, int $bufferLength): bool
+    {
+        if ($this->patternToExtract instanceof Pattern && $this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
+            if (preg_match_all((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+                $this->process_matches($matches, $bytesRead, strlen($buffer), $this->lastMatchEndOffset);
+            }
+        } else {
+            if (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+                $this->process_matches([$matches], $bytesRead, strlen($buffer), $this->lastMatchEndOffset);
+                //There no global modifier supported in regular php regex strings.
+                //So definitely break the while loop after the first match.
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

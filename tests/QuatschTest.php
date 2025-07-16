@@ -1,15 +1,18 @@
 <?php
+
 namespace JulesGraus\Quatsch\Tests;
 
 use JulesGraus\Quatsch\ExplainerFactory;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Quatsch;
+use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Quatsch::class)]
-class QuatschTest extends TestCase {
+class QuatschTest extends TestCase
+{
     public function test_it_uses_tasks(): void
     {
         $explainer = new ExplainerFactory()->make();
@@ -40,7 +43,11 @@ class QuatschTest extends TestCase {
         //Task and extraction logic need to be tested
         new Quatsch()
             ->openFile(__DIR__ . '/fixtures/laravel.log')
-            ->extractFullMatches($errorPattern, 1000, 40)
+            ->extractFullMatches(
+                pattern: $errorPattern,
+                maximumExpectedMatchLength: 1000,
+                chunkSize: 40,
+            )
             ->outputToStdOut()
             ->start();
     }

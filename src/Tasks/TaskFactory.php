@@ -8,6 +8,7 @@ use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
 use JulesGraus\Quatsch\Resources\FileResource;
 use JulesGraus\Quatsch\Resources\StdOutResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
+use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
@@ -48,7 +49,8 @@ class TaskFactory
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: $chunkSize,
             maximumExpectedMatchLength: $maximumExpectedMatchLength,
-            matchSeparator: $matchSeparator
+            matchSeparator: $matchSeparator,
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor()
         );
 
         return $task;

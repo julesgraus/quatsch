@@ -73,16 +73,11 @@ final class Quatsch
     {
         $this->outOfMemoryClosure = $outOfMemory;
 
-        foreach ($this->tasks as $task) {
-            $task->whenOutOfMemoryDo($this->outOfMemoryClosure);
-        }
-
         return $this;
     }
 
     private function addTask(Task $task): Quatsch
     {
-        $task->whenOutOfMemoryDo($this->outOfMemoryClosure);
         $this->tasks[] = $task;
         return $this;
     }
