@@ -5,6 +5,7 @@ namespace JulesGraus\Quatsch\Tests\Tasks;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -42,7 +43,7 @@ class ExtractTaskFeatureTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $errorPattern,
-            outputResource: $outputResource,
+            outputResourceOrOutputRedirector: $outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 20,
             maximumExpectedMatchLength: 1000
@@ -88,7 +89,7 @@ class ExtractTaskFeatureTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
-            outputResource: $outputResource,
+            outputResourceOrOutputRedirector: $outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 20,
             maximumExpectedMatchLength: 200,
@@ -136,5 +137,86 @@ class ExtractTaskFeatureTest extends TestCase
 
         EXPECTED
         , stream_get_contents($outputResource->getHandle()));
+    }
+
+    #[Test]
+    public function it_parses_html_files_and_redirects_matches_to_different_output_resources() {
+        $anyCharacterButQuotes = new Pattern()
+            ->notASingleCharacterOf('"', "'")
+            ->oneOrMoreTimes();
+
+        $unOrderedLists = Pattern::contains('<input')
+            ->wordBoundary()
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+            ->then('name=')
+            ->singleCharacterOf('"', "'")
+            ->captureByName('inputName', $anyCharacterButQuotes)
+            ->singleCharacterOf('"', "'")
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+            ->then('placeholder=')
+            ->singleCharacterOf('"', "'")
+            ->capture($anyCharacterButQuotes)
+            ->singleCharacterOf('"', "'")
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+            ->then('>')
+            ->addModifier(RegexModifier::MULTILINE)
+            ->addModifier(RegexModifier::GLOBAL);
+
+        $inputResource = new TemporaryResource();
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/index.html'));
+        rewind($inputResource->getHandle());
+
+        $fullMatchResource = new TemporaryResource();
+        $nameResource = new TemporaryResource();
+        $placeholderResource = new TemporaryResource();
+
+
+        $task = new ExtractTask(
+            patternToExtract: $unOrderedLists,
+            outputResourceOrOutputRedirector: new OutputRedirector()
+                ->throwExceptionWhenMatchCouldNotBeRedirected()
+                ->sendFullMatchesTo($fullMatchResource)
+                ->sendCapturedMatchesTo('inputName', $nameResource)
+                ->sendCapturedMatchesTo(2, $placeholderResource),
+            stringPatternInspector: new StringPatternInspector(),
+            chunkSize: 20,
+            maximumExpectedMatchLength: 80,
+            matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
+        );
+
+        $task->setMaxMemoryConsumption(1000000);
+        $task->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
+            $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
+        });
+
+        $task->run($inputResource);
+        rewind($fullMatchResource->getHandle());
+        rewind($nameResource->getHandle());
+        rewind($placeholderResource->getHandle());
+
+
+        $this->assertEquals(<<<EXPECTED
+        <input type="text" id="name" name="name" placeholder="Enter your name">
+        <input type="email" id="email" name="email" placeholder="Enter your email">
+        
+        EXPECTED
+        ,stream_get_contents($fullMatchResource->getHandle()));
+
+        $this->assertEquals(<<<EXPECTED
+        name
+        email
+        
+        EXPECTED
+        ,stream_get_contents($nameResource->getHandle()));
+
+        $this->assertEquals(<<<EXPECTED
+        Enter your name
+        Enter your email
+        
+        EXPECTED
+        ,stream_get_contents($placeholderResource->getHandle()));
     }
 }

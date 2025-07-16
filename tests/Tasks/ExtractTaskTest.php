@@ -41,7 +41,7 @@ class ExtractTaskTest extends TestCase
         $pattern = new Pattern();
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
@@ -65,7 +65,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
@@ -92,7 +92,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 4,
             maximumExpectedMatchLength: 10,
@@ -120,7 +120,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 4,
             maximumExpectedMatchLength: 20,
@@ -145,7 +145,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 4,
             maximumExpectedMatchLength: 4
@@ -165,7 +165,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test$/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
@@ -189,7 +189,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 2,
             maximumExpectedMatchLength: 4
@@ -212,7 +212,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
@@ -232,7 +232,7 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             //This regex will find occurrences of the word "apple," but only if it's immediately preceded by the word "red" (using a positive lookbehind).
             patternToExtract: '/(?<=red\s)apple/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 2,
             maximumExpectedMatchLength: 9
@@ -251,7 +251,7 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             //This regex will find occurrences of the word "apple," but only if it's immediately followed by the word "pie" (using a positive lookahead).
             patternToExtract: '/apple(?=\spie)/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 2,
             maximumExpectedMatchLength: 9
@@ -269,7 +269,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test/',
-            outputResource: $this->outputResource,
+            outputResourceOrOutputRedirector: $this->outputResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 128,
             maximumExpectedMatchLength: 200
@@ -298,7 +298,7 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test/',
-            outputResource: $readOnlyResource,
+            outputResourceOrOutputRedirector: $readOnlyResource,
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: 2,
             maximumExpectedMatchLength: 5

@@ -44,19 +44,12 @@ class TaskFactory
     {
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResource: new TemporaryResource($megaBytesToKeepInMemoryBeforeCreatingTempFile),
+            outputResourceOrOutputRedirector: new TemporaryResource($megaBytesToKeepInMemoryBeforeCreatingTempFile),
             stringPatternInspector: new StringPatternInspector(),
             chunkSize: $chunkSize,
             maximumExpectedMatchLength: $maximumExpectedMatchLength,
             matchSeparator: $matchSeparator
         );
-
-//        $task->setLogger(
-//            new Logger('extractIntroMemoryTask')->pushHandler(new StreamHandler(
-//                'php://stdout',
-//                Level::Info
-//            ))
-//        );
 
         return $task;
     }

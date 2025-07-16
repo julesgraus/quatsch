@@ -2,6 +2,7 @@
 
 namespace JulesGraus\Quatsch\Tasks;
 
+use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Tasks\Concerns\HasOutOfMemoryClosure;
 use JulesGraus\Quatsch\Tasks\Concerns\KeepsTrackOfMemoryConsumption;
@@ -15,7 +16,7 @@ abstract class Task implements LoggerAwareInterface
 
     protected LoggerInterface|null $logger = null;
 
-    abstract public function run(QuatschResource|null $inputResource = null): QuatschResource;
+    abstract public function run(QuatschResource|null $inputResource = null): QuatschResource|OutputRedirector;
 
     public function setLogger(LoggerInterface $logger): void
     {

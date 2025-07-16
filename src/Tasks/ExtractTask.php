@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use RuntimeException;
 use function feof;
@@ -19,26 +20,26 @@ class ExtractTask extends Task
 {
     /**
      * @param string|Pattern $patternToExtract
-     * @param QuatschResource $outputResource
+     * @param QuatschResource|OutputRedirector $outputResourceOrOutputRedirector
      * @param StringPatternInspector $stringPatternInspector
      * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption
      * @param int $maximumExpectedMatchLength Must be at least the size of the maximum expected match. If it's to low, it will not find your pattern. If it is bigger, it will consume more memory than necessary
      * @param string $matchSeparator
      */
     public function __construct(
-        private readonly string|Pattern         $patternToExtract,
-        private readonly QuatschResource        $outputResource,
-        private readonly StringPatternInspector $stringPatternInspector,
-        private readonly int                    $chunkSize = 128,
-        private readonly int                    $maximumExpectedMatchLength = 512,
-        private readonly string                 $matchSeparator = PHP_EOL
+        private readonly string|Pattern                   $patternToExtract,
+        private readonly QuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
+        private readonly StringPatternInspector           $stringPatternInspector,
+        private readonly int                              $chunkSize = 128,
+        private readonly int                              $maximumExpectedMatchLength = 512,
+        private readonly string                           $matchSeparator = PHP_EOL
     )
     {
 
     }
 
     public
-    function run(?QuatschResource $inputResource = null): QuatschResource
+    function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
     {
         $this->setBaselineMemoryConsumption();
 
@@ -66,14 +67,14 @@ class ExtractTask extends Task
                 break;
             }
 
-            if($this->stringPatternInspector->hasModifier((string) $this->patternToExtract,'m') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$this->patternToExtract), '$')) {
+            if ($this->stringPatternInspector->hasModifier((string)$this->patternToExtract, 'm') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$this->patternToExtract), '$')) {
                 $chunk = fgets($inputResource->getHandle(), $this->maximumExpectedMatchLength);
             } else {
                 $chunk = fread($inputResource->getHandle(), $this->chunkSize);
             }
 
             $buffer = '';
-            if($chunk !== false) {
+            if ($chunk !== false) {
                 $bytesRead += strlen($chunk);;
                 $buffer = $previousChunkTail . $chunk;
             }
@@ -97,7 +98,7 @@ class ExtractTask extends Task
             $matches = null;
         }
 
-        return $this->outputResource;
+        return $this->outputResourceOrOutputRedirector;
     }
 
     /**
@@ -105,16 +106,25 @@ class ExtractTask extends Task
      */
     private function process_matches(array $matches, int $bytesRead, $bufferLength, int|null &$lastMatchEndOffset): void
     {
-        foreach ($matches as $matchesCollection) {
-            foreach($matchesCollection as $matchData) {
+        foreach ($matches as $group => $matchesCollection) {
+            foreach ($matchesCollection as $matchData) {
                 $match = $matchData[0];
                 $matchOffset = (int)$matchData[1];
                 $foundAtPositionInFile = $bytesRead - $bufferLength + $matchOffset;
 
                 if ($lastMatchEndOffset === null || $foundAtPositionInFile > $lastMatchEndOffset) {
                     $this->logger?->info('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile]);
-                    if (fwrite($this->outputResource->getHandle(), $match . $this->matchSeparator) === false) {
-                        throw new RuntimeException('Failed to write to the resource.');
+
+                    if($this->outputResourceOrOutputRedirector instanceof OutputRedirector) {
+                        if($group === 0) {
+                            $this->outputResourceOrOutputRedirector->redirectFullMatch($match);
+                        } else {
+                            $this->outputResourceOrOutputRedirector->redirectCapturedMatch($group, $match);
+                        }
+                    } else {
+                        if (fwrite($this->outputResourceOrOutputRedirector->getHandle(), $match . $this->matchSeparator) === false) {
+                            throw new RuntimeException('Failed to write to the resource.');
+                        }
                     }
                 } else {
                     $this->logger?->debug('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile . ' (skipping because already found earlier)']);
