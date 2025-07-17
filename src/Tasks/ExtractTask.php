@@ -5,7 +5,6 @@ namespace JulesGraus\Quatsch\Tasks;
 use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
-use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
@@ -22,22 +21,16 @@ class ExtractTask extends Task
     /**
      * @param string|Pattern $patternToExtract
      * @param QuatschResource|OutputRedirector $outputResourceOrOutputRedirector
-     * @param StringPatternInspector $stringPatternInspector
-     * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption
-     * @param int $maximumExpectedMatchLength Must be at least the size of the maximum expected match. If it's to low, it will not find your pattern. If it is bigger, it will consume more memory than necessary
+     * @param SlidingWindowChunkProcessor $slidingWindowChunkProcessor
      * @param string $matchSeparator
      */
     public function __construct(
         private readonly string|Pattern                   $patternToExtract,
         private readonly QuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
-        private readonly StringPatternInspector           $stringPatternInspector,
         private readonly SlidingWindowChunkProcessor      $slidingWindowChunkProcessor,
-        private readonly int                              $chunkSize = 128,
-        private readonly int                              $maximumExpectedMatchLength = 512,
         private readonly string                           $matchSeparator = PHP_EOL,
     )
     {
-
     }
 
     public
@@ -49,11 +42,7 @@ class ExtractTask extends Task
 
         ($this->slidingWindowChunkProcessor)(
             inputResource: $inputResource,
-            outputResource: $this->outputResourceOrOutputRedirector,
             pattern: $this->patternToExtract,
-            maximumExpectedMatchLength: $this->maximumExpectedMatchLength,
-            chunkSize: $this->chunkSize,
-            stringPatternInspector: $this->stringPatternInspector,
             onData: $this->onData(...)
         );
 
@@ -64,11 +53,11 @@ class ExtractTask extends Task
     {
         if ($this->patternToExtract instanceof Pattern && $this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
             if (preg_match_all((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                $this->process_matches($matches, $bytesRead, strlen($buffer), $this->lastMatchEndOffset);
+                $this->process_matches($matches, $bytesRead, $bufferLength, $this->lastMatchEndOffset);
             }
         } else {
             if (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                $this->process_matches([$matches], $bytesRead, strlen($buffer), $this->lastMatchEndOffset);
+                $this->process_matches([$matches], $bytesRead, $bufferLength, $this->lastMatchEndOffset);
                 //There no global modifier supported in regular php regex strings.
                 //So definitely break the while loop after the first match.
                 return false;

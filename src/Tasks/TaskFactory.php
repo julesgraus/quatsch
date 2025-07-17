@@ -46,11 +46,12 @@ class TaskFactory
         $task = new ExtractTask(
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: new TemporaryResource($megaBytesToKeepInMemoryBeforeCreatingTempFile),
-            stringPatternInspector: new StringPatternInspector(),
-            chunkSize: $chunkSize,
-            maximumExpectedMatchLength: $maximumExpectedMatchLength,
-            matchSeparator: $matchSeparator,
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor()
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: $chunkSize,
+                maximumExpectedMatchLength: $maximumExpectedMatchLength,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
+            matchSeparator: $matchSeparator
         );
 
         return $task;

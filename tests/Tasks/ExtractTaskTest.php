@@ -43,10 +43,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 128,
-            maximumExpectedMatchLength: 200,
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $this->expectException(InvalidArgumentException::class);
@@ -67,10 +68,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 128,
-            maximumExpectedMatchLength: 200
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -84,7 +86,7 @@ class ExtractTaskTest extends TestCase
     {
         $contents =
             str_repeat('a', 16) .
-            str_repeat('A', 11) . 'AAB'.
+            str_repeat('A', 11) . 'AAB' .
             str_repeat('x', 16);
 
         fwrite($this->inputResource->getHandle(), $contents);
@@ -95,10 +97,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 4,
-            maximumExpectedMatchLength: 10
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -113,7 +116,7 @@ class ExtractTaskTest extends TestCase
 
         $contents =
             str_repeat('a', 16) .
-            str_repeat('A', 11) . 'AAB'.
+            str_repeat('A', 11) . 'AAB' .
             str_repeat('x', 16);
 
         fwrite($this->inputResource->getHandle(), $contents);
@@ -124,10 +127,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 4,
-            maximumExpectedMatchLength: 20
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -150,10 +154,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $pattern,
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 4,
-            maximumExpectedMatchLength: 4
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -171,10 +176,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/test$/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 128,
-            maximumExpectedMatchLength: 200
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 20,
+                maximumExpectedMatchLength: 1000,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -196,10 +202,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 2,
-            maximumExpectedMatchLength: 4
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 2,
+                maximumExpectedMatchLength: 4,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -220,10 +227,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 128,
-            maximumExpectedMatchLength: 200
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -233,18 +241,20 @@ class ExtractTaskTest extends TestCase
     }
 
     #[Test]
-    public function it_works_with_lookbehinds() {
+    public function it_works_with_lookbehinds()
+    {
         fwrite($this->inputResource->getHandle(), "I have a red apple, a green apple, and a yellow banana.");
         rewind($this->inputResource->getHandle());
 
         $task = new ExtractTask(
-            //This regex will find occurrences of the word "apple," but only if it's immediately preceded by the word "red" (using a positive lookbehind).
+        //This regex will find occurrences of the word "apple," but only if it's immediately preceded by the word "red" (using a positive lookbehind).
             patternToExtract: '/(?<=red\s)apple/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 2,
-            maximumExpectedMatchLength: 9
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -253,18 +263,20 @@ class ExtractTaskTest extends TestCase
     }
 
     #[Test]
-    public function it_works_with_lookaheads() {
+    public function it_works_with_lookaheads()
+    {
         fwrite($this->inputResource->getHandle(), "I love an apple pie, but not just any apple or cherry pie.");
         rewind($this->inputResource->getHandle());
 
         $task = new ExtractTask(
-            //This regex will find occurrences of the word "apple," but only if it's immediately followed by the word "pie" (using a positive lookahead).
+        //This regex will find occurrences of the word "apple," but only if it's immediately followed by the word "pie" (using a positive lookahead).
             patternToExtract: '/apple(?=\spie)/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 2,
-            maximumExpectedMatchLength: 9
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 128,
+                maximumExpectedMatchLength: 200,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $result = $task->run($this->inputResource);
@@ -277,7 +289,11 @@ class ExtractTaskTest extends TestCase
     {
         $outOfMemoryCalled = false;
 
-        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 2,
+            maximumExpectedMatchLength: 4,
+            stringPatternInspector: new StringPatternInspector(),
+        );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(0);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function () use (&$outOfMemoryCalled) {
             $outOfMemoryCalled = true;
@@ -286,10 +302,7 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/test/',
             outputResourceOrOutputRedirector: $this->outputResource,
-            stringPatternInspector: new StringPatternInspector(),
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
-            chunkSize: 128,
-            maximumExpectedMatchLength: 200
         );
 
         $task->run($this->inputResource);
@@ -313,10 +326,11 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/test/',
             outputResourceOrOutputRedirector: $readOnlyResource,
-            stringPatternInspector: new StringPatternInspector(),
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(),
-            chunkSize: 2,
-            maximumExpectedMatchLength: 5
+            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
+                chunkSize: 2,
+                maximumExpectedMatchLength: 5,
+                stringPatternInspector: new StringPatternInspector(),
+            ),
         );
 
         $this->expectException(RuntimeException::class);

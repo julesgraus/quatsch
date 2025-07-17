@@ -42,7 +42,11 @@ class ExtractTaskFeatureTest extends TestCase
 
         $outputResource = new TemporaryResource();
 
-        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 20,
+            maximumExpectedMatchLength: 1000,
+            stringPatternInspector: new StringPatternInspector(),
+        );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
             $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
@@ -51,10 +55,7 @@ class ExtractTaskFeatureTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $errorPattern,
             outputResourceOrOutputRedirector: $outputResource,
-            stringPatternInspector: new StringPatternInspector(),
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
-            chunkSize: 20,
-            maximumExpectedMatchLength: 1000
         );
 
         $task->run($inputResource);
@@ -90,7 +91,11 @@ class ExtractTaskFeatureTest extends TestCase
 
         $outputResource = new TemporaryResource();
 
-        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 20,
+            maximumExpectedMatchLength: 200,
+            stringPatternInspector: new StringPatternInspector(),
+        );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
             $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
@@ -99,10 +104,7 @@ class ExtractTaskFeatureTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
             outputResourceOrOutputRedirector: $outputResource,
-            stringPatternInspector: new StringPatternInspector(),
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
-            chunkSize: 20,
-            maximumExpectedMatchLength: 200,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
 
@@ -179,7 +181,11 @@ class ExtractTaskFeatureTest extends TestCase
         $placeholderResource = new TemporaryResource();
 
 
-        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor();
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 20,
+            maximumExpectedMatchLength: 80,
+            stringPatternInspector: new StringPatternInspector(),
+        );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
             $this->fail('Out of memory MB, memory limit: ' . $memoryLimit . ' MB (' . $memoryLimitInBytes . ' B)');
@@ -192,10 +198,7 @@ class ExtractTaskFeatureTest extends TestCase
                 ->sendFullMatchesTo($fullMatchResource)
                 ->sendCapturedMatchesTo('inputName', $nameResource)
                 ->sendCapturedMatchesTo(2, $placeholderResource),
-            stringPatternInspector: new StringPatternInspector(),
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
-            chunkSize: 20,
-            maximumExpectedMatchLength: 80,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
 
