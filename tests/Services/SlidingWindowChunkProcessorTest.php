@@ -6,8 +6,10 @@ use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(SlidingWindowChunkProcessor::class)]
 class SlidingWindowChunkProcessorTest extends TestCase
 {
     public function test_it_chunks_and_slides_properly(): void
