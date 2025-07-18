@@ -16,14 +16,8 @@ use const PHP_EOL;
 
 class ExtractTask extends Task
 {
-    private int|null $lastMatchEndOffset = null;
+    private int|null $lastMatchPosition = null;
 
-    /**
-     * @param string|Pattern $patternToExtract
-     * @param QuatschResource|OutputRedirector $outputResourceOrOutputRedirector
-     * @param SlidingWindowChunkProcessor $slidingWindowChunkProcessor
-     * @param string $matchSeparator
-     */
     public function __construct(
         private readonly string|Pattern                   $patternToExtract,
         private readonly QuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
@@ -33,12 +27,13 @@ class ExtractTask extends Task
     {
     }
 
-    public
-    function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
+    public function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
     {
         if($inputResource === null) {
             throw new InvalidArgumentException('Input resource is required');
         }
+
+        $this->lastMatchPosition = null;
 
         ($this->slidingWindowChunkProcessor)(
             inputResource: $inputResource,
@@ -53,15 +48,13 @@ class ExtractTask extends Task
     {
         if ($this->patternToExtract instanceof Pattern && $this->patternToExtract->hasModifier(RegexModifier::GLOBAL)) {
             if (preg_match_all((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                $this->process_matches($matches, $bytesRead, $bufferLength, $this->lastMatchEndOffset);
+                $this->process_matches($matches, $bytesRead, $bufferLength);
             }
-        } else {
-            if (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
-                $this->process_matches([$matches], $bytesRead, $bufferLength, $this->lastMatchEndOffset);
-                //There no global modifier supported in regular php regex strings.
-                //So definitely break the while loop after the first match.
-                return false;
-            }
+        } elseif (preg_match((string)$this->patternToExtract, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+            $this->process_matches([$matches], $bytesRead, $bufferLength);
+            //There no global modifier supported in regular php regex strings.
+            //So definitely break the while loop after the first match.
+            return false;
         }
 
         return true;
@@ -70,15 +63,29 @@ class ExtractTask extends Task
     /**
      * @param array<int, array{0: string, 1: int}> $matches
      */
-    private function process_matches(array $matches, int $bytesRead, $bufferLength, int|null &$lastMatchEndOffset): void
+    private function process_matches(array $matches, int $bytesRead, $bufferLength): void
     {
         foreach ($matches as $group => $matchesCollection) {
             foreach ($matchesCollection as $matchData) {
-                $match = $matchData[0];
-                $matchOffset = (int)$matchData[1];
-                $foundAtPositionInFile = $bytesRead - $bufferLength + $matchOffset;
+                [$match, $matchOffset] = $matchData;
+                //The match offset is relative to the beginning of the buffer that was passed to
+                //the preg_match or preg_match_all. The beginning of the buffer relative
+                //to the file is the total bytes read minus the length of the buffer.
+                //Visualized:
+                //
+                //----------[---v------]
+                //
+                //All chars in the line above represent the read bytes. 22 in this example.
+                //The buffer is represented by the [ and ] chars and everything in between.
+                //Its length is 12 chars.
+                //The start of the buffer, indicated by the [ can be calculated by subtracting
+                //the 12 from the 22. so the start position is 10. This explained the first part
+                //of the calculation below. The match offset, represented by the v is relative
+                //to that start position. In this case that would be 4. So, adding 4 to the start
+                //position gives us the position of the match in the complete file.
+                $foundAtPositionInFile = ($bytesRead - $bufferLength) + $matchOffset;
 
-                if ($lastMatchEndOffset === null || $foundAtPositionInFile > $lastMatchEndOffset) {
+                if ($this->lastMatchPosition === null || $foundAtPositionInFile > $this->lastMatchPosition) {
                     $this->logger?->info('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile]);
 
                     if($this->outputResourceOrOutputRedirector instanceof OutputRedirector) {
@@ -95,7 +102,11 @@ class ExtractTask extends Task
                 } else {
                     $this->logger?->debug('ExtractTask: Match: ', ['match' => $match, 'position in file: ' . $foundAtPositionInFile . ' (skipping because already found earlier)']);
                 }
-                $lastMatchEndOffset = $foundAtPositionInFile;
+
+                //Keep track of the last match position.
+                //If the next match is at the same position, it allows us to prevent writing it twice.
+                //A match can occur twice when buffer was to long because the user did specify a too big max expected match length.
+                $this->lastMatchPosition = $foundAtPositionInFile;
             }
         }
     }
