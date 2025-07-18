@@ -6,7 +6,7 @@ use JulesGraus\Quatsch\ExplainerFactory;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Quatsch;
-use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

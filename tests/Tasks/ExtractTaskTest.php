@@ -9,7 +9,7 @@ use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
 use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
-use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use Monolog\Handler\StreamHandler;

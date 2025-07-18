@@ -5,7 +5,7 @@ namespace JulesGraus\Quatsch\Tests\Services;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
-use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

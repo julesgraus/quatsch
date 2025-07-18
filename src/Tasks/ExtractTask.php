@@ -7,7 +7,7 @@ use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\QuatschResource;
-use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use RuntimeException;
 use function fwrite;
 use function preg_match;

@@ -7,7 +7,7 @@ use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
-use JulesGraus\Quatsch\Services\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;

@@ -1,9 +1,8 @@
 <?php
 
-namespace JulesGraus\Quatsch\Services;
+namespace JulesGraus\Quatsch\ResourceAlgorithms;
 
 use Closure;
-use InvalidArgumentException;
 use JulesGraus\Quatsch\Concerns\HasLogger;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
