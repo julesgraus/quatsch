@@ -23,9 +23,9 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
      * @param StringPatternInspector $stringPatternInspector
      */
     public function __construct(
-        private readonly int $chunkSize = 128,
+        public readonly int $chunkSize = 128,
         private readonly int $maximumExpectedMatchLength = 512,
-        private readonly StringPatternInspector $stringPatternInspector,
+        public readonly StringPatternInspector $stringPatternInspector,
     )
     {
 

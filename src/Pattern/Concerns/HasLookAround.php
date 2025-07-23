@@ -15,7 +15,7 @@ trait HasLookAround
     {
         $this->subPatterns[] = self::stringToPattern(
             '(?=' . $this->patternToString($pattern) . ')',
-            "Positive Lookahead The pattern must be followed by '$pattern'",
+            "The pattern must be followed by '$pattern'",
             Type::POSITIVE_LOOKAHEAD
         );
         return $this;

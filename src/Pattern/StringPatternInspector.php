@@ -29,6 +29,12 @@ class StringPatternInspector
         return str_split(mb_strtolower(mb_substr($pattern, $pos + 1)));
     }
 
+    public function withoutLookarounds(string|Pattern $pattern): string
+    {
+        return preg_replace('/\(\?\??[<!=].*?\)/', '', (string) $pattern);
+    }
+
+
     public function getDelimiter(string $pattern): ?string
     {
         if (mb_strlen($pattern) < 3) {
@@ -42,7 +48,7 @@ class StringPatternInspector
         $delimiter = mb_substr($pattern, 0, 1);
         $pos = strrpos($pattern, $delimiter);
         if ($pos === 0) {
-            throw new InvalidArgumentException('Pattern contains only 1 delimiter while it expects 2.');
+            throw new InvalidArgumentException('Pattern contains only 1 delimiter "'.$delimiter.'" while it expects 2.');
         }
 
         //A delimiter can be any non-alphanumeric, non-backslash, non-whitespace character

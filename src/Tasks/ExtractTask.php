@@ -105,7 +105,7 @@ class ExtractTask extends Task
 
                 //Keep track of the last match position.
                 //If the next match is at the same position, it allows us to prevent writing it twice.
-                //A match can occur twice when buffer was to long because the user did specify a too big max expected match length.
+                //A match can occur twice when the buffer was too long because the user did specify a too big max expected match length.
                 $this->lastMatchPosition = $foundAtPositionInFile;
             }
         }

@@ -111,6 +111,25 @@ class StringPatternInspectorTest extends TestCase
         $this->assertEquals($expectedToUseVariableLengthLookAhead, $this->stringPatternInspector->patternUsesVariableLengthLookahead($pattern));
     }
 
+    #[DataProvider('without_lookarounds_provider')]
+    public function test_it_strips_lookarounds_from_a_pattern(string $pattern, string $expectation): void
+    {
+        $inspector = new StringPatternInspector();
+        $this->assertEquals($expectation, $inspector->withoutLookarounds($pattern));
+    }
+
+    public static function without_lookarounds_provider(): array
+    {
+        return [
+            'positive lookahead' => ['/a(?=b)/', '/a/'],
+            'negative lookahead' => ['/a(?!b)/', '/a/'],
+            'positive lookbehind' => ['/(?<=a)b/', '/b/'],
+            'negative lookbehind' => ['/(?<!a)b/', '/b/'],
+            'complex pattern with multiple lookarounds' => ['/(?<=a)b(?=c)|x(?!y)(?<!z)/', '/b|x/'],
+            'pattern with no lookarounds' => ['/a(b|c)d/', '/a(b|c)d/'],
+        ];
+    }
+
     public static function lookbehind_with_quantifiers_provider(): array
     {
         return [
