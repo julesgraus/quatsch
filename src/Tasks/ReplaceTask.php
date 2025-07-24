@@ -5,8 +5,8 @@ namespace JulesGraus\Quatsch\Tasks;
 use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
-use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Dto\ReplacementMutation;
 use RuntimeException;
@@ -26,7 +26,7 @@ class ReplaceTask extends Task
     public function __construct(
         string|Pattern|array                         $pattern,
         private readonly string|array                $replacement,
-        private readonly QuatschResource             $outputResource,
+        private readonly AbstractQuatschResource             $outputResource,
         private readonly SlidingWindowChunkProcessor $slidingWindowChunkProcessor,
     )
     {
@@ -47,7 +47,7 @@ class ReplaceTask extends Task
         }
     }
 
-    public function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
+    public function run(?AbstractQuatschResource $inputResource = null): AbstractQuatschResource|OutputRedirector
     {
         if ($inputResource === null) {
             throw new InvalidArgumentException('Input resource is required');
@@ -122,7 +122,7 @@ class ReplaceTask extends Task
         }
     }
 
-    private function processAllPatterns(?QuatschResource $inputResource): void
+    private function processAllPatterns(?AbstractQuatschResource $inputResource): void
     {
         foreach ($this->patterns as $patternIndex => $pattern) {
             rewind($inputResource->getHandle());
@@ -137,7 +137,7 @@ class ReplaceTask extends Task
         }
     }
 
-    private function makeReplacements(QuatschResource $inputResource): void
+    private function makeReplacements(AbstractQuatschResource $inputResource): void
     {
         ksort($this->replacementMutations);
 

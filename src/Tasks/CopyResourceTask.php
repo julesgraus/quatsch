@@ -2,7 +2,7 @@
 
 namespace JulesGraus\Quatsch\Tasks;
 
-use JulesGraus\Quatsch\Resources\QuatschResource;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use function fwrite;
 
 /**
@@ -11,18 +11,17 @@ use function fwrite;
 class CopyResourceTask extends Task
 {
     public function __construct(
-        private readonly QuatschResource $outputResource,
-    ) {
+        private readonly AbstractQuatschResource $outputResource,
+    )
+    {
 
     }
 
-    public function run(QuatschResource|null $inputResource = null): QuatschResource
+    public function run(AbstractQuatschResource $inputResource): AbstractQuatschResource
     {
-        if($inputResource) {
-            rewind($inputResource->getHandle());
-            while(!feof($inputResource->getHandle())) {
-                fwrite($this->outputResource->getHandle(), fread($inputResource->getHandle(), 128));
-            }
+        rewind($inputResource->getHandle());
+        while (!feof($inputResource->getHandle())) {
+            fwrite($this->outputResource->getHandle(), fread($inputResource->getHandle(), 128));
         }
 
         return $this->outputResource;

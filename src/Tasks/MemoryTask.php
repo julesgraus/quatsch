@@ -2,13 +2,9 @@
 
 namespace JulesGraus\Quatsch\Tasks;
 
-use InvalidArgumentException;
-use JulesGraus\Quatsch\Resources\FileResource;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
-use JulesGraus\Quatsch\Resources\QuatschResource;
-use PHPUnit\Framework\Attributes\CoversClass;
 use function feof;
-use function file_exists;
 use function fread;
 use function fwrite;
 use function rewind;
@@ -20,7 +16,7 @@ class MemoryTask extends Task
     ) {
     }
 
-    public function run(QuatschResource|null $inputResource = null): QuatschResource
+    public function run(AbstractQuatschResource|null $inputResource = null): AbstractQuatschResource
     {
         $temporaryResource = new TemporaryResource($this->megaBytesToKeepInMemoryBeforeCreatingTempFile);
 

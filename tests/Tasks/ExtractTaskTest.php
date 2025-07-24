@@ -6,8 +6,8 @@ use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
-use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
@@ -23,8 +23,8 @@ use Monolog\Logger;
 #[CoversClass(ExtractTask::class)]
 class ExtractTaskTest extends TestCase
 {
-    private QuatschResource $inputResource;
-    private QuatschResource $outputResource;
+    private AbstractQuatschResource $inputResource;
+    private AbstractQuatschResource $outputResource;
 
     protected function setUp(): void
     {

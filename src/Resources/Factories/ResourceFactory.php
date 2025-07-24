@@ -2,8 +2,8 @@
 namespace JulesGraus\Quatsch\Resources\Factories;
 
 use Exception;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\FileResource;
-use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\Resources\StdOutResource;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 
@@ -13,7 +13,7 @@ class ResourceFactory implements ResourceFactoryInterface
     private string $path;
     private FileMode $fileMode;
 
-    public function create(): QuatschResource
+    public function create(): AbstractQuatschResource
     {
         return match ($this->type) {
             'stdOut' => new StdOutResource(),

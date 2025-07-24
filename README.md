@@ -39,4 +39,8 @@ _Possible solition 1:_
 When the chunk size is set to the length of half of a line you are trying to extract, it will see the end of the chunk
 as the end of the line. Just choose a chunk length, bigger than the longest line of your file.
 
+### I use a resource with file mode FileMode::READ_APPEND (a+) when using a task on it, it hangs indefinitely.
+This filemode places the file pointer at the end of the file. Try FileMode::READ_WRITE (r+) so it can start reading from
+the beginning. Don't for get to check if the resource is seekable and rewind it to the beginning.
+
 

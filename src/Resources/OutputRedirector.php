@@ -6,20 +6,20 @@ use RuntimeException;
 
 class OutputRedirector
 {
-    private QuatschResource|null $fullMatchesResource = null;
+    private AbstractQuatschResource|null $fullMatchesResource = null;
     private array $capturedMatchResources = [];
     private array $capturedMatchesDelimiters = [];
     private string $fullMatchesResourceDelimiter = PHP_EOL;
     private bool $throwExceptionWhenMatchCouldNotBeRedirected = false;
 
-    public function sendFullMatchesTo(QuatschResource $resource, string $delimiter = PHP_EOL): self
+    public function sendFullMatchesTo(AbstractQuatschResource $resource, string $delimiter = PHP_EOL): self
     {
         $this->fullMatchesResourceDelimiter = $delimiter;
         $this->fullMatchesResource = $resource;
         return $this;
     }
 
-    public function sendCapturedMatchesTo(string|int $groupNumberOrName, QuatschResource $resource, string $delimiter = PHP_EOL): self
+    public function sendCapturedMatchesTo(string|int $groupNumberOrName, AbstractQuatschResource $resource, string $delimiter = PHP_EOL): self
     {
         $this->capturedMatchesDelimiters[$groupNumberOrName] = $delimiter;
         $this->capturedMatchResources[$groupNumberOrName] = $resource;
@@ -34,7 +34,7 @@ class OutputRedirector
 
     public function redirectFullMatch(string $fullMatch): void
     {
-        if($this->fullMatchesResource instanceof QuatschResource) {
+        if($this->fullMatchesResource instanceof AbstractQuatschResource) {
             fwrite($this->fullMatchesResource->getHandle(), $fullMatch.$this->fullMatchesResourceDelimiter);
         }
     }
@@ -50,7 +50,7 @@ class OutputRedirector
 
         if(
             isset($this->capturedMatchResources[$groupNumberOrName]) &&
-            $this->capturedMatchResources[$groupNumberOrName] instanceof QuatschResource &&
+            $this->capturedMatchResources[$groupNumberOrName] instanceof AbstractQuatschResource &&
             $delimiter = $this->capturedMatchesDelimiters[$groupNumberOrName]
         ) {
             fwrite($this->capturedMatchResources[$groupNumberOrName]->getHandle(), $capturedMatch.$delimiter);

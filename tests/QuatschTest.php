@@ -3,11 +3,25 @@
 namespace JulesGraus\Quatsch\Tests;
 
 use JulesGraus\Quatsch\ExplainerFactory;
+use JulesGraus\Quatsch\Pattern\Explainers\AsciiTableCharacterSets\RegularCharacterSet;
+use JulesGraus\Quatsch\Pattern\Explainers\AsciiTableExplainer;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
+use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Quatsch;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
+use JulesGraus\Quatsch\Resources\FileResource;
+use JulesGraus\Quatsch\Resources\StdOutResource;
+use JulesGraus\Quatsch\Resources\TemporaryResource;
+use JulesGraus\Quatsch\Tasks\CopyResourceTask;
+use JulesGraus\Quatsch\Tasks\Enums\FileMode;
+use JulesGraus\Quatsch\Tasks\ExtractTask;
+use JulesGraus\Quatsch\Tasks\ReplaceTask;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Quatsch::class)]
@@ -70,4 +84,107 @@ class QuatschTest extends TestCase
      *   ->mergeLinesOfFiles(' ', 'errors.txt', 'timestamps.txt)
      *   ->start();
      */
+
+    #[Test]
+    public function less_than_ideal_api(): void
+    {
+        $stdOutResource = new StdOutResource(mode: FileMode::READ_WRITE);
+
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 123,
+            maximumExpectedMatchLength: 1000,
+            stringPatternInspector: new StringPatternInspector()
+        );
+
+        $errorPattern = Pattern::contains(Pattern::quote('['))
+            ->digit()->times(4)
+            ->then('-')
+            ->digit()->times(2)
+            ->then('-')
+            ->digit()->times(2)
+            ->then(' ')
+            ->digit()->times(2)
+            ->then(':')
+            ->digit()->times(2)
+            ->then(':')
+            ->digit()->times(2)
+            ->then(Pattern::quote(']'))
+            ->singleCharacter()->oneOrMoreTimes()
+            ->multiLineEndOfString()
+            ->addModifier(RegexModifier::MULTILINE)
+            ->addModifier(RegexModifier::GLOBAL);
+
+        $inputResource = new FileResource(
+            path: __DIR__ . '/fixtures/laravel.log',
+            mode: FileMode::READ
+        );
+
+        $errorLines = new TemporaryResource(
+            megaBytesToKeepInMemoryBeforeCreatingTempFile: 2,
+            mode: FileMode::READ_WRITE
+        );
+
+
+        new CopyResourceTask($errorLines)
+            ->run($inputResource);
+
+        rewind($errorLines->getHandle());
+
+        $errorsWithRelativeFilePaths = new TemporaryResource(
+            megaBytesToKeepInMemoryBeforeCreatingTempFile: 2,
+            mode: FileMode::READ_WRITE
+        );
+
+        $extractErrorLineTask = new ExtractTask(
+            patternToExtract: $errorPattern,
+            outputResourceOrOutputRedirector: $errorsWithRelativeFilePaths,
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor
+        );
+
+        $extractErrorLineTask->run($errorLines);
+        rewind($errorLines->getHandle());
+
+        $filePathPatternTypeOne = Pattern::precededBy('called in ')
+            ->captureByName('beginning_of_path_type_one', new Pattern()
+                ->singleCharacter()
+                ->asLeastTimesAsPossible()
+            )
+            ->group(Pattern::contains(Pattern::quote('/app')))
+            ->addModifier(RegexModifier::GLOBAL)
+            ->addModifier(RegexModifier::MULTILINE)
+            ->addModifier(RegexModifier::DOT_ALL);
+
+        $filePathPatternTypeTwo = Pattern::precededBy(
+            Pattern::contains('on line ')
+                ->digit()
+                ->betweenTimes(1,9)
+                ->then(' at ')
+        )
+        ->captureByName('beginning_of_path_type_two', new Pattern()
+            ->singleCharacter()
+            ->asLeastTimesAsPossible()
+        )
+        ->group(Pattern::contains(Pattern::quote('/app')))
+        ->addModifier(RegexModifier::GLOBAL)
+        ->addModifier(RegexModifier::MULTILINE)
+        ->addModifier(RegexModifier::DOT_ALL);
+
+        $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
+            chunkSize: 123,
+            maximumExpectedMatchLength: 40,
+            stringPatternInspector: new StringPatternInspector()
+        );
+
+        $replaceFilePaths = new ReplaceTask(
+            pattern: [
+                $filePathPatternTypeOne,
+                $filePathPatternTypeTwo
+            ],
+                replacement: '<REDACTED>',
+            outputResource: $stdOutResource,
+            slidingWindowChunkProcessor: $slidingWindowChunkProcessor
+        );
+
+        $replaceFilePaths->run($errorsWithRelativeFilePaths);
+    }
 }

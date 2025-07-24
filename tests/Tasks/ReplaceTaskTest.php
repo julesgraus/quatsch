@@ -6,7 +6,7 @@ use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
-use JulesGraus\Quatsch\Resources\QuatschResource;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\ReplaceTask;
@@ -20,8 +20,8 @@ use Monolog\Logger;
 #[CoversClass(ReplaceTask::class)]
 class ReplaceTaskTest extends TestCase
 {
-    private QuatschResource $inputResource;
-    private QuatschResource $outputResource;
+    private AbstractQuatschResource $inputResource;
+    private AbstractQuatschResource $outputResource;
 
     protected function setUp(): void
     {

@@ -5,8 +5,8 @@ namespace JulesGraus\Quatsch\Tasks;
 use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
-use JulesGraus\Quatsch\Resources\QuatschResource;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use RuntimeException;
 use function fwrite;
@@ -20,14 +20,14 @@ class ExtractTask extends Task
 
     public function __construct(
         private readonly string|Pattern                   $patternToExtract,
-        private readonly QuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
+        private readonly AbstractQuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
         private readonly SlidingWindowChunkProcessor      $slidingWindowChunkProcessor,
         private readonly string                           $matchSeparator = PHP_EOL,
     )
     {
     }
 
-    public function run(?QuatschResource $inputResource = null): QuatschResource|OutputRedirector
+    public function run(?AbstractQuatschResource $inputResource = null): AbstractQuatschResource|OutputRedirector
     {
         if($inputResource === null) {
             throw new InvalidArgumentException('Input resource is required');

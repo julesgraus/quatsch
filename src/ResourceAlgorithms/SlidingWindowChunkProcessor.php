@@ -6,7 +6,7 @@ use Closure;
 use JulesGraus\Quatsch\Concerns\HasLogger;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
-use JulesGraus\Quatsch\Resources\QuatschResource;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Tasks\Concerns\HasOutOfMemoryClosure;
 use JulesGraus\Quatsch\Tasks\Concerns\KeepsTrackOfMemoryConsumption;
 use Psr\Log\LoggerAwareInterface;
@@ -32,7 +32,7 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
     }
 
     public function __invoke(
-        QuatschResource $inputResource,
+        AbstractQuatschResource $inputResource,
         string|Pattern  $pattern,
         Closure         $onData,
     ): void
@@ -55,9 +55,21 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
             }
 
             if ($this->stringPatternInspector->hasModifier((string)$pattern, 'm') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$pattern), '$')) {
+                $this->logger?->debug(__CLASS__.' Reading line using fgets with maximum expected match length of '. $this->maximumExpectedMatchLength);
+
+                //In non-blocking mode an fgets() call will always return right away,
+                //while in blocking mode it will wait for data to become available on the stream.
+                $inputResource->setNonBlocking();
                 $chunk = fgets($inputResource->getHandle(), $this->maximumExpectedMatchLength);
+                $this->logger?->debug(__CLASS__.' Read line: ', ['line' => $chunk]);
             } else {
                 $chunk = fread($inputResource->getHandle(), $this->chunkSize);
+                $this->logger?->debug(__CLASS__.' Read chunk: ', ['chunk' => $chunk]);
+            }
+
+            if($chunk === false) {
+                $this->logger?->debug(__CLASS__.' fread or fgets returned false. Breaking.');
+                break;
             }
 
             $buffer = '';
@@ -74,5 +86,7 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
 
             $previousChunkTail = substr($buffer, -($this->chunkSize + $overlapSize));
         }
+
+        $this->logger?->debug(__CLASS__.' Done.');
     }
 }

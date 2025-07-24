@@ -2,7 +2,7 @@
 
 namespace JulesGraus\Quatsch\Tests\Tasks;
 
-use JulesGraus\Quatsch\Resources\QuatschResource;
+use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\Tasks\MemoryTask;
 use Mockery;
@@ -49,7 +49,7 @@ class MemoryTaskTest extends TestCase
         fwrite($inputHandle, 'Test content');
         rewind($inputHandle);
 
-        $mockInputResource = Mockery::mock(QuatschResource::class);
+        $mockInputResource = Mockery::mock(AbstractQuatschResource::class);
         $mockInputResource->shouldReceive('getHandle')->andReturn($inputHandle);
 
         // Act
@@ -67,7 +67,7 @@ class MemoryTaskTest extends TestCase
     public function runWithLargeInputData(): void
     {
         // Arrange
-        $mockInputResource = Mockery::mock(QuatschResource::class);
+        $mockInputResource = Mockery::mock(AbstractQuatschResource::class);
         $inputHandle = fopen('php://memory', 'rb+');
 
         // Make content, bigger than the memory limit. So it should create a temporary file instead of keeping it in memory.
