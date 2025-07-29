@@ -7,6 +7,7 @@
 3. [The patterns](#the-patterns)
    - [The Copy Resource task](#the-copy-resource-task)
    - [The Extract task](#the-extract-task)
+     - [Redirecting matches](#redirecting-matches)
    - [The Replace task](#the-replace-task)
 
 ## Introduction
