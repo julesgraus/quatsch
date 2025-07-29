@@ -7,9 +7,18 @@ use function fopen;
 
 class StdOutResource extends AbstractQuatschResource
 {
-    public function __construct(FileMode $mode = FileMode::READ_APPEND)
+    public function __construct(FileMode $mode = FileMode::APPEND, bool $binary = true)
     {
-        $this->handle = fopen('php://stdout', $mode->value);
+        if(!in_array($mode, [FileMode::APPEND, FileMode::WRITE_TRUNCATE])) {
+            throw new InvalidArgumentException('Invalid mode. stdOut is write only.');
+        }
+
+        $modeValue = $mode->value;
+        if($binary) {
+            $modeValue .= 'b';
+        }
+
+        $this->handle = fopen('php://stdout', $modeValue);
         if($this->handle === false) {
             throw new InvalidArgumentException('Could not open stdout.');
         }

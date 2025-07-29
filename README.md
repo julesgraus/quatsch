@@ -67,6 +67,7 @@ of your task.
 
 - [Fluent Regexes](./documentation/regex/regex.md)
 - [Tasks](./documentation/tasks/tasks.md)
+- [Resources](./documentation/resources/resources.md)
 
 
 ## Troubleshooting

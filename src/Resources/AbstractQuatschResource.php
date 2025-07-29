@@ -33,8 +33,6 @@ abstract class AbstractQuatschResource
         return $this;
     }
 
-
-
     public function __destruct()
     {
         if(is_resource($this->handle)) {
