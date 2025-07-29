@@ -42,8 +42,6 @@ class OutputRedirectorTest extends TestCase
     public function it_throws_an_exception_when_a_match_could_not_be_redirected() {
         $this->expectException(RuntimeException::class);
 
-        $resource = new TemporaryResource();
-
         $outputRedirector = new OutputRedirector();
         $outputRedirector->throwExceptionWhenMatchCouldNotBeRedirected();
         $outputRedirector->redirectCapturedMatch(0, 'captured match');

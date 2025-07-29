@@ -12,20 +12,22 @@ class ResourceFactory implements ResourceFactoryInterface
     private null|string $type = null;
     private string $path;
     private FileMode $fileMode;
+    private bool $binary;
 
     public function create(): AbstractQuatschResource
     {
         return match ($this->type) {
             'stdOut' => new StdOutResource(),
-            'file' => new FileResource($this->path, $this->fileMode),
+            'file' => new FileResource($this->path, $this->fileMode, $this->binary),
             default => throw new Exception('First call one of the configureFor* methods'),
         };
     }
 
-    public function configureForFile(string $path, FileMode $mode): ResourceFactory
+    public function configureForFile(string $path, FileMode $mode, bool $binary): ResourceFactory
     {
         $this->path = $path;
         $this->fileMode = $mode;
+        $this->binary = $binary;
         $this->type = 'file';
         return $this;
     }

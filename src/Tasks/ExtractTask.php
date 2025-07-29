@@ -2,37 +2,36 @@
 
 namespace JulesGraus\Quatsch\Tasks;
 
-use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
-use function fwrite;
-use function preg_match;
-use function preg_match_all;
-use const PHP_EOL;
 
-class ExtractTask extends Task
+class ExtractTask implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private int|null $lastMatchPosition = null;
+    private AbstractQuatschResource|OutputRedirector $outputResourceOrOutputRedirector;
 
     public function __construct(
-        private readonly string|Pattern                   $patternToExtract,
-        private readonly AbstractQuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
-        private readonly SlidingWindowChunkProcessor      $slidingWindowChunkProcessor,
-        private readonly string                           $matchSeparator = PHP_EOL,
+        private readonly string|Pattern                           $patternToExtract,
+        private readonly SlidingWindowChunkProcessor              $slidingWindowChunkProcessor,
+        private readonly string                                   $matchSeparator = PHP_EOL,
     )
     {
     }
 
-    public function run(?AbstractQuatschResource $inputResource = null): AbstractQuatschResource|OutputRedirector
+    public function __invoke(
+        AbstractQuatschResource                  $inputResource,
+        AbstractQuatschResource|OutputRedirector $outputResourceOrOutputRedirector,
+    ): void
     {
-        if($inputResource === null) {
-            throw new InvalidArgumentException('Input resource is required');
-        }
-
+        $this->outputResourceOrOutputRedirector = $outputResourceOrOutputRedirector;
         $this->lastMatchPosition = null;
 
         ($this->slidingWindowChunkProcessor)(
@@ -40,8 +39,6 @@ class ExtractTask extends Task
             pattern: $this->patternToExtract,
             onData: $this->onData(...)
         );
-
-        return $this->outputResourceOrOutputRedirector;
     }
 
     private function onData(string $buffer, int $bytesRead, int $bufferLength): bool

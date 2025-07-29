@@ -54,11 +54,10 @@ class ExtractTaskFeatureTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $errorPattern,
-            outputResourceOrOutputRedirector: $outputResource,
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
         );
 
-        $task->run($inputResource);
+        $task(inputResource: $inputResource, outputResourceOrOutputRedirector: $outputResource);
         rewind($outputResource->getHandle());
 
 
@@ -103,12 +102,11 @@ class ExtractTaskFeatureTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
-            outputResourceOrOutputRedirector: $outputResource,
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
 
-        $task->run($inputResource);
+        $task(inputResource: $inputResource, outputResourceOrOutputRedirector: $outputResource);
         rewind($outputResource->getHandle());
 
         $this->assertEquals(<<<EXPECTED
@@ -193,16 +191,16 @@ class ExtractTaskFeatureTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $unOrderedLists,
-            outputResourceOrOutputRedirector: new OutputRedirector()
-                ->throwExceptionWhenMatchCouldNotBeRedirected()
-                ->sendFullMatchesTo($fullMatchResource)
-                ->sendCapturedMatchesTo('inputName', $nameResource)
-                ->sendCapturedMatchesTo(2, $placeholderResource),
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
             matchSeparator: PHP_EOL.'------------------------------------'.PHP_EOL
         );
 
-        $task->run($inputResource);
+        $task(inputResource: $inputResource, outputResourceOrOutputRedirector: new OutputRedirector()
+            ->throwExceptionWhenMatchCouldNotBeRedirected()
+            ->sendFullMatchesTo($fullMatchResource)
+            ->sendCapturedMatchesTo(groupNumberOrName: 'inputName', resource: $nameResource)
+            ->sendCapturedMatchesTo(groupNumberOrName: 2, resource: $placeholderResource));
+
         rewind($fullMatchResource->getHandle());
         rewind($nameResource->getHandle());
         rewind($placeholderResource->getHandle());

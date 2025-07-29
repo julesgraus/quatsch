@@ -3,19 +3,19 @@
 namespace JulesGraus\Quatsch\ResourceAlgorithms;
 
 use Closure;
-use JulesGraus\Quatsch\Concerns\HasLogger;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Tasks\Concerns\HasOutOfMemoryClosure;
 use JulesGraus\Quatsch\Tasks\Concerns\KeepsTrackOfMemoryConsumption;
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 class SlidingWindowChunkProcessor implements LoggerAwareInterface
 {
     use HasOutOfMemoryClosure;
     use KeepsTrackOfMemoryConsumption;
-    use HasLogger;
+    use LoggerAwareTrait;
 
     /**
      * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption

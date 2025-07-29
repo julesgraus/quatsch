@@ -3,27 +3,26 @@
 namespace JulesGraus\Quatsch\Tasks;
 
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use RuntimeException;
 use function fwrite;
 
 /**
  * Copies the input resource to the
  */
-class CopyResourceTask extends Task
+class CopyResourceTask implements LoggerAwareInterface
 {
-    public function __construct(
-        private readonly AbstractQuatschResource $outputResource,
-    )
-    {
+    use LoggerAwareTrait;
 
-    }
-
-    public function run(AbstractQuatschResource $inputResource): AbstractQuatschResource
-    {
-        rewind($inputResource->getHandle());
-        while (!feof($inputResource->getHandle())) {
-            fwrite($this->outputResource->getHandle(), fread($inputResource->getHandle(), 128));
+    public function __invoke(AbstractQuatschResource $inputResource, AbstractQuatschResource $outputResource): void {
+        if(!$inputResource->isSeekable()) {
+            throw new RuntimeException('Input resource must be seekable.');
         }
 
-        return $this->outputResource;
+        rewind($inputResource->getHandle());
+        while (!feof($inputResource->getHandle())) {
+            fwrite($outputResource->getHandle(), fread($inputResource->getHandle(), 128));
+        }
     }
 }

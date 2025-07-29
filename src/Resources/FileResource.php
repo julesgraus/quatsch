@@ -7,9 +7,14 @@ use function fopen;
 
 class FileResource extends AbstractQuatschResource
 {
-    public function __construct(string $path, FileMode $mode)
+    public function __construct(string $path, FileMode $mode, bool $binary = true)
     {
-        $this->handle = fopen($path, $mode->value);
+        $modeValue = $mode->value;
+        if($binary) {
+            $modeValue .= 'b';
+        }
+
+        $this->handle = fopen($path, $modeValue);
         if($this->handle === false) {
             throw new InvalidArgumentException('File is not readable');
         }

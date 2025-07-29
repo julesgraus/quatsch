@@ -2,13 +2,12 @@
 namespace JulesGraus\Quatsch\Tests\Resources;
 
 use InvalidArgumentException;
-use JulesGraus\Quatsch\Quatsch;
 use JulesGraus\Quatsch\Resources\FileResource;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(Quatsch::class)]
+#[CoversClass(FileResource::class)]
 class FileResourceTest extends TestCase {
     public function test_it_throws_an_invalid_argument_exception_when_instantiating_from_non_existing_file(): void
     {

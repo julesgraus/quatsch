@@ -2,23 +2,22 @@
 
 namespace JulesGraus\Quatsch\Tests\Tasks;
 
-use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
 use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
-use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
+use Monolog\Logger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Monolog\Logger;
 
 #[CoversClass(ExtractTask::class)]
 class ExtractTaskTest extends TestCase
@@ -37,25 +36,6 @@ class ExtractTaskTest extends TestCase
     }
 
     #[Test]
-    public function throwsExceptionWhenInputResourceIsNull(): void
-    {
-        $pattern = new Pattern();
-        $task = new ExtractTask(
-            patternToExtract: $pattern,
-            outputResourceOrOutputRedirector: $this->outputResource,
-            slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
-                stringPatternInspector: new StringPatternInspector(),
-            ),
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $task->run(null);
-    }
-
-    #[Test]
     public function basicPatternExtraction(): void
     {
         $pattern = Pattern::contains('test')
@@ -67,7 +47,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -75,10 +54,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        rewind($result->getHandle());
-        $this->assertEquals("test123\n", stream_get_contents($result->getHandle()));
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("test123\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -96,7 +75,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -104,10 +82,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
-        rewind($result->getHandle());
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        $this->assertEquals("AAAAAAAAAAB\n", stream_get_contents($result->getHandle()));
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("AAAAAAAAAAB\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -126,7 +104,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -134,12 +111,12 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
-        //The buffer contents at one point will be "aaaaaaaaAAAAAAAAAAAAABxx". It pattern will match AAAAAAAAAAB.
-        //The next iteration the buffer content will be: aaaaAAAAAAAAAAAAABxxxxxx. It will still match AAAAAAAAAAB writing it twice to the log if not handled properly.
-        rewind($result->getHandle());
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        $this->assertEquals("AAAAAAAAAAB\n", stream_get_contents($result->getHandle()));
+        //The buffer contents at one point will be "aaaaaaaaAAAAAAAAAAAAABxx". It pattern will match AAAAAAAAAAB.
+        //In the next iteration the buffer content will be: aaaaAAAAAAAAAAAAABxxxxxx. It will still match AAAAAAAAAAB writing it twice to the log if not handled properly.
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("AAAAAAAAAAB\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -153,7 +130,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $pattern,
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -161,10 +137,11 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
 
-        rewind($result->getHandle());
-        $this->assertEquals("test\ntest\ntest\ntest\n", stream_get_contents($result->getHandle()));
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
+
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("test\ntest\ntest\ntest\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -175,7 +152,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test$/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 20,
                 maximumExpectedMatchLength: 1000,
@@ -183,10 +159,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        rewind($result->getHandle());
-        $this->assertEquals("test\n", stream_get_contents($result->getHandle()));
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("test\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -201,7 +177,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 2,
                 maximumExpectedMatchLength: 4,
@@ -209,10 +184,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        rewind($result->getHandle());
-        $this->assertEquals("test\n", stream_get_contents($result->getHandle()));
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("test\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -226,7 +201,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -234,10 +208,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 
-        rewind($result->getHandle());
-        $this->assertEquals("test\n", stream_get_contents($result->getHandle()));
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("test\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -249,7 +223,6 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
         //This regex will find occurrences of the word "apple," but only if it's immediately preceded by the word "red" (using a positive lookbehind).
             patternToExtract: '/(?<=red\s)apple/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -257,9 +230,11 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
-        rewind($result->getHandle());
-        $this->assertEquals("apple\n", stream_get_contents($result->getHandle()));
+
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
+
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("apple\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -271,7 +246,6 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
         //This regex will find occurrences of the word "apple," but only if it's immediately followed by the word "pie" (using a positive lookahead).
             patternToExtract: '/apple(?=\spie)/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 128,
                 maximumExpectedMatchLength: 200,
@@ -279,9 +253,10 @@ class ExtractTaskTest extends TestCase
             ),
         );
 
-        $result = $task->run($this->inputResource);
-        rewind($result->getHandle());
-        $this->assertEquals("apple\n", stream_get_contents($result->getHandle()));
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
+
+        rewind($this->outputResource->getHandle());
+        $this->assertEquals("apple\n", stream_get_contents($this->outputResource->getHandle()));
     }
 
     #[Test]
@@ -301,11 +276,10 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test/',
-            outputResourceOrOutputRedirector: $this->outputResource,
             slidingWindowChunkProcessor: $slidingWindowChunkProcessor,
         );
 
-        $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);;
         $this->assertTrue($outOfMemoryCalled);
     }
 
@@ -317,7 +291,7 @@ class ExtractTaskTest extends TestCase
         touch($tempFilePath);
 
         $readOnlyResource = new ResourceFactory()
-            ->configureForFile($tempFilePath, FileMode::READ)
+            ->configureForFile($tempFilePath, FileMode::READ, true)
             ->create();
 
         fwrite($this->inputResource->getHandle(), 'test');
@@ -325,7 +299,6 @@ class ExtractTaskTest extends TestCase
 
         $task = new ExtractTask(
             patternToExtract: '/test/',
-            outputResourceOrOutputRedirector: $readOnlyResource,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
                 chunkSize: 2,
                 maximumExpectedMatchLength: 5,
@@ -336,6 +309,6 @@ class ExtractTaskTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to write to the resource.');
 
-        $task->run($this->inputResource);
+        $task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $readOnlyResource);;
     }
 }

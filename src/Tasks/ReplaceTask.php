@@ -6,15 +6,17 @@ use InvalidArgumentException;
 use JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
-use JulesGraus\Quatsch\Resources\OutputRedirector;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Tasks\Dto\ReplacementMutation;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
 use function preg_match;
 use function preg_match_all;
 
-class ReplaceTask extends Task
-{
+class ReplaceTask implements LoggerAwareInterface {
+    use LoggerAwareTrait;
+
     private int|null $lastMatchPosition = null;
 
     /** @var ReplacementMutation[] */
@@ -22,11 +24,11 @@ class ReplaceTask extends Task
 
     /** @var Pattern[]|string[] */
     private array $patterns = [];
+    private AbstractQuatschResource $outputResource;
 
     public function __construct(
         string|Pattern|array                         $pattern,
         private readonly string|array                $replacement,
-        private readonly AbstractQuatschResource             $outputResource,
         private readonly SlidingWindowChunkProcessor $slidingWindowChunkProcessor,
     )
     {
@@ -47,16 +49,11 @@ class ReplaceTask extends Task
         }
     }
 
-    public function run(?AbstractQuatschResource $inputResource = null): AbstractQuatschResource|OutputRedirector
+    public function __invoke(AbstractQuatschResource $inputResource, AbstractQuatschResource $outoutResource): void
     {
-        if ($inputResource === null) {
-            throw new InvalidArgumentException('Input resource is required');
-        }
-
+        $this->outputResource = $outoutResource;
         $this->processAllPatterns($inputResource);
         $this->makeReplacements($inputResource);
-
-        return $this->outputResource;
     }
 
     private function onData(string $buffer, int $bytesRead, int $bufferLength, int $patternIndex): bool
