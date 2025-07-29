@@ -33,6 +33,11 @@ abstract class AbstractQuatschResource
         return $this;
     }
 
+    public function isBlocking()
+    {
+        return stream_get_meta_data($this->getHandle())['blocked'];
+    }
+
     public function __destruct()
     {
         if(is_resource($this->handle)) {
