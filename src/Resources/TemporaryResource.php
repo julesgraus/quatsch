@@ -11,8 +11,7 @@ class TemporaryResource extends AbstractQuatschResource
     public function __construct(int $megaBytesToKeepInMemoryBeforeCreatingTempFile = 2, FileMode $mode = FileMode::READ_APPEND)
     {
         $bytes = $megaBytesToKeepInMemoryBeforeCreatingTempFile * 1000000;
-//        $this->handle = fopen('php://temp/maxmemory:' . $bytes, $mode->value);
-        $this->handle = fopen('php://temp', $mode->value);
+        $this->handle = fopen('php://temp/maxmemory:' . $bytes, $mode->value);
 
         if($this->handle === false) {
             throw new InvalidArgumentException('Could not open temporary file.');
