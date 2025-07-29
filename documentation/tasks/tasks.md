@@ -76,7 +76,7 @@ Then invoke it with an input and output resource to extract data from the input 
 store the extracted data in the output resource:
 
 ```php
-$task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
+$replaceTask(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 ```
 
 Remember to rewind your input resource when invoking to ensure it reads from the beginning and
@@ -88,7 +88,7 @@ The pattern you try to extract could have (named) capture groups. You can redire
 using an output redirector. For example like this:
 
 ```php
-$task(inputResource: $inputResource, outputResourceOrOutputRedirector: new OutputRedirector()
+$replaceTask(inputResource: $inputResource, outputResourceOrOutputRedirector: new OutputRedirector()
     ->throwExceptionWhenMatchCouldNotBeRedirected()
     ->sendFullMatchesTo($fullMatchResource)
     ->sendCapturedMatchesTo(groupNumberOrName: 'inputName', resource: $nameResource)

@@ -48,9 +48,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $pattern,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -76,9 +76,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -105,9 +105,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/A{10}B/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -131,9 +131,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $pattern,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -153,9 +153,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/test$/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 20,
-                maximumExpectedMatchLength: 1000,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 1000,
+                chunkSize: 20,
             ),
         );
 
@@ -178,9 +178,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 4,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 4,
+                chunkSize: 2,
             ),
         );
 
@@ -202,9 +202,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: $patternToExtract,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -224,9 +224,9 @@ class ExtractTaskTest extends TestCase
         //This regex will find occurrences of the word "apple," but only if it's immediately preceded by the word "red" (using a positive lookbehind).
             patternToExtract: '/(?<=red\s)apple/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -247,9 +247,9 @@ class ExtractTaskTest extends TestCase
         //This regex will find occurrences of the word "apple," but only if it's immediately followed by the word "pie" (using a positive lookahead).
             patternToExtract: '/apple(?=\spie)/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 128,
-                maximumExpectedMatchLength: 200,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 200,
+                chunkSize: 128,
             ),
         );
 
@@ -265,9 +265,9 @@ class ExtractTaskTest extends TestCase
         $outOfMemoryCalled = false;
 
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 2,
-            maximumExpectedMatchLength: 4,
             stringPatternInspector: new StringPatternInspector(),
+            maximumExpectedMatchLength: 4,
+            chunkSize: 2,
         );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(0);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function () use (&$outOfMemoryCalled) {
@@ -300,9 +300,9 @@ class ExtractTaskTest extends TestCase
         $task = new ExtractTask(
             patternToExtract: '/test/',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 5,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 5,
+                chunkSize: 2,
             ),
         );
 

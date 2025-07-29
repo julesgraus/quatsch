@@ -15,9 +15,9 @@ class SlidingWindowChunkProcessorTest extends TestCase
     public function test_it_chunks_and_slides_properly(): void
     {
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 2,
+            stringPatternInspector: new StringPatternInspector(),
             maximumExpectedMatchLength: 4,
-            stringPatternInspector: new StringPatternInspector()
+            chunkSize: 2
         );
 
         $inputResource = new TemporaryResource();
@@ -55,9 +55,9 @@ class SlidingWindowChunkProcessorTest extends TestCase
     public function test_it_triggers_an_out_of_memory_callback_when_the_memory_limit_is_reached(): void
     {
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 2,
+            stringPatternInspector: new StringPatternInspector(),
             maximumExpectedMatchLength: 4,
-            stringPatternInspector: new StringPatternInspector()
+            chunkSize: 2
         );
 
 
@@ -86,9 +86,9 @@ class SlidingWindowChunkProcessorTest extends TestCase
     public function test_it_stops_chunking_early_if_the_on_data_closure_returns_false(): void
     {
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 2,
+            stringPatternInspector: new StringPatternInspector(),
             maximumExpectedMatchLength: 4,
-            stringPatternInspector: new StringPatternInspector()
+            chunkSize: 2
         );
 
         $inputResource = new TemporaryResource();

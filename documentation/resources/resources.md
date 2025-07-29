@@ -68,6 +68,25 @@ use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 $output = new TemporaryResource(2, FileMode::READ_APPEND);
 ```
 
+### The StdIn resource 
+When you run your php script in the terminal, the StdIn resource by default blocks your script from running and waits for input from you.
+Up until you type a newline by pressing enter or return. It then continues your script. This also means that stdIn is a read-only resource
+that cannot be rewound or sought through. Tasks in general need to be able to seek through your resources to perform actions on the data. 
+This means that you must copy the output of this StdIn resource to a temporary resource that can be sought through. 
+
+```php
+use \JulesGraus\Quatsch\Tasks\CopyResourceTask;
+use \JulesGraus\Quatsch\Resources\StdInResource;
+use \JulesGraus\Quatsch\Resources\TemporaryResource;
+
+$stdin = new StdInResource();
+$tempResource = new TemporaryResource();
+
+$copyTask = new CopyResourceTask();
+$copyTask(inputResource: $stdin, outputResource: $tempResource);
+rewind($tempResource->getHandle());
+```
+
 
 
 

@@ -48,9 +48,9 @@ class ReplaceTaskTest extends TestCase
             pattern: $pattern,
             replacement: $replacement,
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 5,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 5,
+                chunkSize: 2,
             ),
         );
 
@@ -76,9 +76,9 @@ class ReplaceTaskTest extends TestCase
             ,
             replacement: 'fast',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 5,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 5,
+                chunkSize: 2,
             ),
         );
 
@@ -105,9 +105,9 @@ class ReplaceTaskTest extends TestCase
             ],
             replacement: 'fast',
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 5,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 5,
+                chunkSize: 2,
             ),
         );
 
@@ -142,9 +142,9 @@ class ReplaceTaskTest extends TestCase
                 'regular',
             ],
             slidingWindowChunkProcessor: new SlidingWindowChunkProcessor(
-                chunkSize: 2,
-                maximumExpectedMatchLength: 13,
                 stringPatternInspector: new StringPatternInspector(),
+                maximumExpectedMatchLength: 13,
+                chunkSize: 2,
             ),
         );
 

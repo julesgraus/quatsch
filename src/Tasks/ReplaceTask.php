@@ -122,7 +122,6 @@ class ReplaceTask implements LoggerAwareInterface {
     private function processAllPatterns(?AbstractQuatschResource $inputResource): void
     {
         foreach ($this->patterns as $patternIndex => $pattern) {
-            rewind($inputResource->getHandle());
             $this->lastMatchPosition = null;
             ($this->slidingWindowChunkProcessor)(
                 inputResource: $inputResource,
@@ -147,10 +146,6 @@ class ReplaceTask implements LoggerAwareInterface {
             $bytesToRead = $replacementMutation->startPosition - $previousItemEndPosition - $offsetPositionsBy;
             $this->logger?->debug('Offset positions by '.$offsetPositionsBy);
             $this->logger?->debug('Bytes to read (start position - previous item end position): ' . $bytesToRead);
-
-//            if($bytesToRead <= 0) {
-//                dd($replacementMutation, $previousItemEndPosition, $replacementMutation->startPosition);
-//            }
 
             while ($bytesToRead > 0) {
                 $readBytes = min($bytesToRead, $this->slidingWindowChunkProcessor->chunkSize);

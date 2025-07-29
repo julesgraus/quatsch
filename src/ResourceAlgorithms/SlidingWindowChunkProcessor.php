@@ -6,10 +6,12 @@ use Closure;
 use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
+use JulesGraus\Quatsch\Resources\StdInResource;
 use JulesGraus\Quatsch\Tasks\Concerns\HasOutOfMemoryClosure;
 use JulesGraus\Quatsch\Tasks\Concerns\KeepsTrackOfMemoryConsumption;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use RuntimeException;
 
 class SlidingWindowChunkProcessor implements LoggerAwareInterface
 {
@@ -18,14 +20,14 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
     use LoggerAwareTrait;
 
     /**
-     * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption
-     * @param int $maximumExpectedMatchLength
      * @param StringPatternInspector $stringPatternInspector
+     * @param int $maximumExpectedMatchLength
+     * @param int $chunkSize With how many bytes the input resource must be read each time before it tries to match the pattern. Lower means less memory consumption
      */
     public function __construct(
-        public readonly int $chunkSize = 128,
-        private readonly int $maximumExpectedMatchLength = 512,
         public readonly StringPatternInspector $stringPatternInspector,
+        private readonly int $maximumExpectedMatchLength = 512,
+        public readonly int $chunkSize = 128,
     )
     {
 
@@ -38,6 +40,9 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
     ): void
     {
         $this->setBaselineMemoryConsumption();
+        if($inputResource instanceof StdInResource) {
+            throw new RuntimeException('StdInResource is not supported by the sliding window chunk processor.');
+        }
 
         $overlapSize = $this->maximumExpectedMatchLength <= $this->chunkSize ? 0 : $this->maximumExpectedMatchLength - $this->chunkSize;
 
@@ -56,10 +61,6 @@ class SlidingWindowChunkProcessor implements LoggerAwareInterface
 
             if ($this->stringPatternInspector->hasModifier((string)$pattern, 'm') && str_ends_with($this->stringPatternInspector->extractPatternBody((string)$pattern), '$')) {
                 $this->logger?->debug(__CLASS__.' Reading line using fgets with maximum expected match length of '. $this->maximumExpectedMatchLength);
-
-                //In non-blocking mode an fgets() call will always return right away,
-                //while in blocking mode it will wait for data to become available on the stream.
-                $inputResource->setNonBlocking();
                 $chunk = fgets($inputResource->getHandle(), $this->maximumExpectedMatchLength);
                 $this->logger?->debug(__CLASS__.' Read line: ', ['line' => $chunk]);
             } else {

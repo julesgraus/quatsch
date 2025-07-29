@@ -43,9 +43,9 @@ class ExtractTaskFeatureTest extends TestCase
         $outputResource = new TemporaryResource();
 
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 20,
-            maximumExpectedMatchLength: 1000,
             stringPatternInspector: new StringPatternInspector(),
+            maximumExpectedMatchLength: 1000,
+            chunkSize: 20,
         );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
@@ -91,9 +91,9 @@ class ExtractTaskFeatureTest extends TestCase
         $outputResource = new TemporaryResource();
 
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 20,
-            maximumExpectedMatchLength: 200,
             stringPatternInspector: new StringPatternInspector(),
+            maximumExpectedMatchLength: 200,
+            chunkSize: 20,
         );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
@@ -180,9 +180,9 @@ class ExtractTaskFeatureTest extends TestCase
 
 
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
-            chunkSize: 20,
-            maximumExpectedMatchLength: 80,
             stringPatternInspector: new StringPatternInspector(),
+            maximumExpectedMatchLength: 80,
+            chunkSize: 20,
         );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
         $slidingWindowChunkProcessor->whenOutOfMemoryDo(function ($memoryLimit, $memoryLimitInBytes) {
