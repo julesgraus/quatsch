@@ -50,21 +50,12 @@ $task(inputResource: $inputResource, outputResourceOrOutputRedirector: $outputRe
 ```
 
 ## Practical use cases
-The tools provided in this package can help you do the next things and more:
-
-### Log file parsing
-If you have big log files and only are interested in just the errors without the stacktrace, you could extract
-just the errors into a new file that makes sense.
-
-### API data handling
-Use it to retrieve data from an api and map / transform it to your business / domain logic.
-
-## Components and Features
-In this package you can fluently build regexes. These regexes can be used in tasks that, for example, extract, replace, 
-or manipulate data in different ways. Data is passed to and returned from Tasks using resource classes. 
+In this package you can fluently build regexes. These regexes can be used in tasks that, for example, extract, replace,
+or manipulate data in different ways. Data is passed to and returned from Tasks using resource classes.
 A FileResource could, for example, be used to open and read a log file. And another file resource to store the result
 of your task.
 
+## Components and Features
 - [Fluent Regexes](./documentation/regex/regex.md)
 - [Tasks](./documentation/tasks/tasks.md)
 - [Resources](./documentation/resources/resources.md)
