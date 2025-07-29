@@ -6,7 +6,8 @@
 2. [The SlidingWindowChunkProcessor](#the-slidingwindowchunkprocessor)
 3. [The patterns](#the-patterns)
    - [The Copy Resource task](#the-copy-resource-task)
-   - [The extract task](#the-extract-task)
+   - [The Extract task](#the-extract-task)
+   - [The Replace task](#the-replace-task)
 
 ## Introduction
 
@@ -45,7 +46,12 @@ In other cases it will most likely just read a chunk and immediately try to matc
 ## The patterns
 ### The Copy Resource Task
 Give it an input resource, and it will simply copy the contents to the
-output resource, 128 bytes a time.
+output resource, 128 bytes at a time.
+
+```php
+  $task = new CopyResourceTask();
+  $task(inputResource: $inputResource, outputResource: $outputResource);
+```
 
 ### The Extract Task
 Construct it by giving it a Pattern (string or instance), SlidingWindowChunkProcessor
@@ -88,14 +94,14 @@ $task(inputResource: $inputResource, outputResourceOrOutputRedirector: new Outpu
     ->sendCapturedMatchesTo(groupNumberOrName: 2, resource: $placeholderResource));
 ```
 
-### The ReplaceTask
+### The Replace Task
 The ReplaceTask can replace one or more subjects with a respective replacement.
 The subject must be a string regex or an instance of Pattern. You can also wrap multiple
 subjects in an array. If you do, and the replacement is an array too, they will be replaced
 with the respective replacements at the same positions. If the replacement is just one item,
 it will replace all subjects with that one replacement.
 
-This replaces the words "quick" and "relaxed" with the word fast:
+This configuration replaces the words "quick" and "relaxed" with the word fast:
 ```php
 $task = new ReplaceTask(
    pattern: new Pattern()->wordBoundary()
@@ -115,8 +121,7 @@ $task = new ReplaceTask(
 $task(inputResource: $this->inputResource, outoutResource: $this->outputResource);
 ```
 
-
-This one replaces the word "quick" and "relaxed" with "eager". And "red" with "blue"
+This configuration replaces the word "quick" and "relaxed" with "eager". And the word "red" with "blue"
 ```php
 $task = new ReplaceTask(
    pattern: [
