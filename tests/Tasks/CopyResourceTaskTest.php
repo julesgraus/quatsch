@@ -12,20 +12,18 @@ use PHPUnit\Framework\Attributes\Test;
 class CopyResourceTaskTest extends MockeryTestCase
 {
     #[Test]
-    public function runWithInputResource(): void
+    public function test_it_copies(): void
     {
-        // Arrange
         $inputResource = new TemporaryResource();
         fwrite($inputResource->getHandle(), 'test content');
+        rewind($inputResource->getHandle());
 
         $outputResource = new TemporaryResource();
 
         $task = new CopyResourceTask();
 
-        // Act
         $task(inputResource: $inputResource, outputResource: $outputResource);
 
-        // Assert
         rewind($outputResource->getHandle());
         $this->assertEquals('test content', stream_get_contents($outputResource->getHandle()));
     }

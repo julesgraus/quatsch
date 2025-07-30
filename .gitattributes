@@ -1,5 +1,7 @@
 // .gitattributes
 /documentation export-ignore
+/examples export-ignore
 phpunit.xml.dist export-ignore
 /.github/ export-ignore
 /tests/ export-ignore
+/shell-scripts/ export-ignore

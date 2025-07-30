@@ -60,6 +60,8 @@ of your task.
 - [Tasks](./documentation/tasks/tasks.md)
 - [Resources](./documentation/resources/resources.md)
 
+## Examples
+You can find some examples in the examples directory.
 
 ## Troubleshooting
 ### I try to extract patterns up till the end of the line, but it stops earlier than the end of the line.

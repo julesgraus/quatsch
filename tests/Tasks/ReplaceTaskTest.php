@@ -94,7 +94,7 @@ class ReplaceTaskTest extends TestCase
         fwrite($this->inputResource->getHandle(), "The quick brown fox jumps over the lazy dog quickly. And a relaxed red panda is laughing his ass off");
         rewind($this->inputResource->getHandle());
 
-        $task = new ReplaceTask(
+        $replaceTask = new ReplaceTask(
             pattern: [
                 new Pattern()->wordBoundary()
                     ->then('quick')
@@ -111,7 +111,7 @@ class ReplaceTaskTest extends TestCase
             ),
         );
 
-        $task(inputResource: $this->inputResource, outoutResource: $this->outputResource);
+        $replaceTask(inputResource: $this->inputResource, outoutResource: $this->outputResource);
 
         rewind($this->outputResource->getHandle());
         $this->assertEquals("The fast brown fox jumps over the lazy dog fastly. And a fast fast panda is laughing his ass off", stream_get_contents($this->outputResource->getHandle()));
@@ -123,7 +123,7 @@ class ReplaceTaskTest extends TestCase
         fwrite($this->inputResource->getHandle(), "The quick brown fox jumps over the lazy dog quickly. And a relaxed red panda is laughing.");
         rewind($this->inputResource->getHandle());
 
-        $task = new ReplaceTask(
+        $replaceTask = new ReplaceTask(
             pattern: [
                 new Pattern()->wordBoundary()
                     ->then('quick')
@@ -148,7 +148,7 @@ class ReplaceTaskTest extends TestCase
             ),
         );
 
-        $task(inputResource: $this->inputResource, outoutResource: $this->outputResource);
+        $replaceTask(inputResource: $this->inputResource, outoutResource: $this->outputResource);
 
         rewind($this->outputResource->getHandle());
         $this->assertEquals("The eager brown fox jumps over the lazy dog eagerly. And an eager regular panda is laughing.", stream_get_contents($this->outputResource->getHandle()));

@@ -51,6 +51,10 @@ class ReplaceTask implements LoggerAwareInterface {
 
     public function __invoke(AbstractQuatschResource $inputResource, AbstractQuatschResource $outoutResource): void
     {
+        if($inputResource->isSeekable() === false) {
+            throw new RuntimeException('The input resource must be seekable. Consider using an intermediate seekable resource.');
+        }
+
         $this->outputResource = $outoutResource;
         $this->processAllPatterns($inputResource);
         $this->makeReplacements($inputResource);
@@ -122,6 +126,9 @@ class ReplaceTask implements LoggerAwareInterface {
     private function processAllPatterns(?AbstractQuatschResource $inputResource): void
     {
         foreach ($this->patterns as $patternIndex => $pattern) {
+            //We need to rewind so we can process this pattern along the whole resource.
+            rewind($inputResource->getHandle());
+
             $this->lastMatchPosition = null;
             ($this->slidingWindowChunkProcessor)(
                 inputResource: $inputResource,

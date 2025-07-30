@@ -23,11 +23,6 @@ class CopyResourceTask implements LoggerAwareInterface
             return;
         }
 
-        if(!$inputResource->isSeekable()) {
-            throw new RuntimeException('Input resource must be seekable.');
-        }
-
-        rewind($inputResource->getHandle());
         while (!feof($inputResource->getHandle())) {
             fwrite($outputResource->getHandle(), fread($inputResource->getHandle(), 128));
         }
