@@ -7,7 +7,7 @@ use JulesGraus\Quatsch\Pattern\Pattern;
 use JulesGraus\Quatsch\Pattern\StringPatternInspector;
 use JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
-use JulesGraus\Quatsch\Resources\Factories\ResourceFactory;
+use JulesGraus\Quatsch\Resources\FileResource;
 use JulesGraus\Quatsch\Resources\TemporaryResource;
 use JulesGraus\Quatsch\Tasks\Enums\FileMode;
 use JulesGraus\Quatsch\Tasks\ExtractTask;
@@ -290,9 +290,7 @@ class ExtractTaskTest extends TestCase
         $tempFilePath = sys_get_temp_dir() . '_test_file.txt';
         touch($tempFilePath);
 
-        $readOnlyResource = new ResourceFactory()
-            ->configureForFile($tempFilePath, FileMode::READ, true)
-            ->create();
+        $readOnlyResource = new FileResource($tempFilePath, FileMode::READ);
 
         fwrite($this->inputResource->getHandle(), 'test');
         rewind($this->inputResource->getHandle());

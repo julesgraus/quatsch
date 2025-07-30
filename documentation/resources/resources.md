@@ -5,6 +5,7 @@
 1. [Introduction](#introduction)
 3. [The Resources](#the-resources)
     - [The File Resource](#the-file-resource)
+    - [The HTTP Get Resource](#the-http-get-resource)
     - [The StdOut Resource](#the-stdout-resource)
     - [The Temporary Resource](#the-temporary-resource)
 
@@ -39,6 +40,23 @@ Not all resources can be rewound or sought through. You can use the isSeekable m
 on resources to check if the resource can be sought through.
 The FileResource supports a third boolean argument called "binary" 
 it forces binary mode when true, which will not translate your data.
+
+### The HTTP get resource
+The HTTP get resource connects to a HTTP or HTTPS resource via a url you specify as the first parameter. Read only.
+The second parameter must be an array containing Http  Header ```JulesGraus\Quatsch\Resources\Header``` instances. 
+For authentication purposes there are two special headers classes included: ```JulesGraus\Quatsch\Resources\Basic```  
+and ```JulesGraus\Quatsch\Resources\BearerToken```. The third parameter specifies the timeout that is used when connecting.
+
+```php
+use JulesGraus\Quatsch\Resources\HttpGetResource;
+use JulesGraus\Quatsch\Resources\Header\Header;
+
+$exampleOrgData = new HttpGetResource(
+    url: 'https://example.org', 
+    headers: [new Header('accept', 'text/html')], 
+    timeout: 5
+)
+```
 
 ### The StdOut resource
 De StdOut resource outputs data. Usually to the terminal if you run your php script in the terminal.

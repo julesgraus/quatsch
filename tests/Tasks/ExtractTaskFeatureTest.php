@@ -37,7 +37,7 @@ class ExtractTaskFeatureTest extends TestCase
             ->addModifier(RegexModifier::GLOBAL);
 
         $inputResource = new TemporaryResource();
-        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/laravel.log'));
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../Fixtures/laravel.log'));
         rewind($inputResource->getHandle());
 
         $outputResource = new TemporaryResource();
@@ -85,7 +85,7 @@ class ExtractTaskFeatureTest extends TestCase
             ->addModifier(RegexModifier::GLOBAL);
 
         $inputResource = new TemporaryResource();
-        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/index.html'));
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../Fixtures/index.html'));
         rewind($inputResource->getHandle());
 
         $outputResource = new TemporaryResource();
@@ -171,7 +171,7 @@ class ExtractTaskFeatureTest extends TestCase
             ->addModifier(RegexModifier::GLOBAL);
 
         $inputResource = new TemporaryResource();
-        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../fixtures/index.html'));
+        fwrite($inputResource->getHandle(), file_get_contents(__DIR__ . '/../Fixtures/index.html'));
         rewind($inputResource->getHandle());
 
         $fullMatchResource = new TemporaryResource();

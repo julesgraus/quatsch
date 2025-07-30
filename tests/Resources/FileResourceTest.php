@@ -18,6 +18,6 @@ class FileResourceTest extends TestCase {
     public function test_it_instantiates_from_file(): void
     {
         $this->expectNotToPerformAssertions();
-        new FileResource(__DIR__ . '/../fixtures/laravel.log', FileMode::READ);
+        new FileResource(__DIR__ . '/../Fixtures/laravel.log', FileMode::READ);
     }
 }
