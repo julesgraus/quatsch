@@ -2,27 +2,27 @@
 
 namespace JulesGraus\Quatsch\Tasks;
 
+use Dom\HTMLDocument;
 use JsonException;
 use JulesGraus\Quatsch\Resources\AbstractQuatschResource;
+use JulesGraus\Quatsch\Resources\OutputRedirector;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-class JsonTask implements LoggerAwareInterface
+class HtmlTask implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
+    private AbstractQuatschResource|OutputRedirector $outputResourceOrOutputRedirector;
 
-    /**
-     * @throws JsonException
-     */
     public function __invoke(
-        AbstractQuatschResource                  $inputResource,
-    ): array|string|int
+        AbstractQuatschResource $inputResource,
+    ): HTMLDocument
     {
         $contents = stream_get_contents($inputResource->getHandle());
-        if($contents === false) {
+        if ($contents === false) {
             throw new JsonException('Failed to read the input resource.');
         }
 
-        return json_decode(json: $contents, associative: true, flags: JSON_THROW_ON_ERROR);
+        return HTMLDocument::createFromString($contents);
     }
 }

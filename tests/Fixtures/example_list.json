@@ -11,9 +11,20 @@
       "zipcode": "92998-3874",
       "geo": {
         "lat": "-37.3159",
-        "lng": "81.1496"
+        "lng": "81.1496",
+        "name": "Head quarters"
       }
     },
+    "favorite_books": [
+      {
+        "name": "book a",
+        "author": "author a"
+      },
+      {
+        "name": "book b",
+        "author": "author b"
+      }
+    ],
     "phone": "1-770-736-8031 x56442",
     "website": "hildegard.org",
     "company": {
@@ -34,7 +45,8 @@
       "zipcode": "90566-7771",
       "geo": {
         "lat": "-43.9509",
-        "lng": "-34.4618"
+        "lng": "-34.4618",
+        "name": "Daughter company"
       }
     },
     "phone": "010-692-6593 x09125",
@@ -77,11 +89,7 @@
       "street": "Hoeger Mall",
       "suite": "Apt. 692",
       "city": "South Elvis",
-      "zipcode": "53919-4257",
-      "geo": {
-        "lat": "29.4572",
-        "lng": "-164.2990"
-      }
+      "zipcode": "53919-4257"
     },
     "phone": "493-170-9623 x156",
     "website": "kale.biz",

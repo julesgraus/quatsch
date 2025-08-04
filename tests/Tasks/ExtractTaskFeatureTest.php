@@ -12,6 +12,7 @@ use JulesGraus\Quatsch\Tasks\ExtractTask;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use function stream_get_contents;
 
 #[CoversClass(ExtractTask::class)]
 class ExtractTaskFeatureTest extends TestCase
@@ -128,10 +129,8 @@ class ExtractTaskFeatureTest extends TestCase
             </ul>
         ------------------------------------
         <ul>
-                <li>test@example.com</li>
-                <li>user.name@subdomain.example.org</li>
-                <li>invalid-email-example.com</li>
-            </ul>
+                        <li>Some nested ul list item</li>
+                    </ul>
         ------------------------------------
         <ul>
                 <li>2025-07-14</li>
@@ -181,7 +180,7 @@ class ExtractTaskFeatureTest extends TestCase
 
         $slidingWindowChunkProcessor = new SlidingWindowChunkProcessor(
             stringPatternInspector: new StringPatternInspector(),
-            maximumExpectedMatchLength: 80,
+            maximumExpectedMatchLength: 70,
             chunkSize: 20,
         );
         $slidingWindowChunkProcessor->setMaxMemoryConsumption(1000000);
