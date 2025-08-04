@@ -5,10 +5,17 @@ While providing tools to make that process as easy as possible, but extensible a
 The goal of this package is to help you manipulate data in a way it makes sense again. 
 Turning Quatsch (Nonsense) into something data that makes sense and has value to you.
 
-The next code, for example, opens a file, extracts data from it using a regex pattern, and stores the extracted
-data into a file.
+The next code, for example, opens a file, extracts data from it using a regex pattern, and stores the extracted.
 
 ```php
+use \JulesGraus\Quatsch\Pattern\Pattern;
+use \JulesGraus\Quatsch\Pattern\Enums\RegexModifier;
+use \JulesGraus\Quatsch\Pattern\StringPatternInspector;
+use \JulesGraus\Quatsch\Tasks\ExtractTask;
+use \JulesGraus\Quatsch\Tasks\Enums\FileMode;
+use \JulesGraus\Quatsch\Resources\FileResource;
+use \JulesGraus\Quatsch\ResourceAlgorithms\SlidingWindowChunkProcessor
+
 $errorPattern = Pattern::contains(Pattern::quote('['))
     ->digit()->times(4)
     ->then('-')
@@ -59,6 +66,7 @@ of your task.
 - [Fluent Regexes](./documentation/regex/regex.md)
 - [Tasks](./documentation/tasks/tasks.md)
 - [Resources](./documentation/resources/resources.md)
+- [JsonPath](./documentation/json_path/json_path.md)
 
 ## Examples
 You can find some examples in the examples directory.

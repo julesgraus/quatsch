@@ -9,6 +9,8 @@
    - [The Extract task](#the-extract-task)
      - [Redirecting matches](#redirecting-matches)
    - [The Replace task](#the-replace-task)
+   - [The Json task](#the-json-task)
+   - [The HTML task](#the-html-task)
 
 ## Introduction
 
@@ -76,7 +78,7 @@ Then invoke it with an input and output resource to extract data from the input 
 store the extracted data in the output resource:
 
 ```php
-$replaceTask(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
+$task(inputResource: $this->inputResource, outputResourceOrOutputRedirector: $this->outputResource);
 ```
 
 Remember to rewind your input resource when invoking to ensure it reads from the beginning and
@@ -88,7 +90,7 @@ The pattern you try to extract could have (named) capture groups. You can redire
 using an output redirector. For example like this:
 
 ```php
-$replaceTask(inputResource: $inputResource, outputResourceOrOutputRedirector: new OutputRedirector()
+$task(inputResource: $inputResource, outputResourceOrOutputRedirector: new OutputRedirector()
     ->throwExceptionWhenMatchCouldNotBeRedirected()
     ->sendFullMatchesTo($fullMatchResource)
     ->sendCapturedMatchesTo(groupNumberOrName: 'inputName', resource: $nameResource)
@@ -104,6 +106,8 @@ it will replace all subjects with that one replacement.
 
 This configuration replaces the words "quick" and "relaxed" with the word fast:
 ```php
+use JulesGraus\Quatsch\Tasks\ReplaceTask;
+
 $task = new ReplaceTask(
    pattern: new Pattern()->wordBoundary()
                ->then('quick')
@@ -119,11 +123,13 @@ $task = new ReplaceTask(
    ),
 );
 
-$task(inputResource: $this->inputResource, outoutResource: $this->outputResource);
+$task(inputResource: $inputResource, outoutResource: $outputResource);
 ```
 
 This configuration replaces the word "quick" and "relaxed" with "eager". And the word "red" with "blue"
 ```php
+use JulesGraus\Quatsch\Tasks\ReplaceTask;
+
 $task = new ReplaceTask(
    pattern: [
        new Pattern()->wordBoundary()
@@ -143,4 +149,25 @@ $task = new ReplaceTask(
        stringPatternInspector: new StringPatternInspector(),
    ),
 );
+```
+
+### The Json Task
+The JsonTask simply decodes a resource and converts it into a PHP value.
+In its core it uses [json_decode](https://www.php.net/manual/en/function.json-decode.php).
+
+```php
+use JulesGraus\Quatsch\Tasks\JsonTask;
+
+$task = new JsonTask();
+$result = $task(inputResource: $httpGetResource);
+```
+
+### The Html Task
+The HtmlTask decodes a resource into a [Dom\HTMLDocument instance](https://www.php.net/manual/en/class.dom-htmldocument.php)
+
+```php
+use JulesGraus\Quatsch\Tasks\HtmlTask;
+
+$task = new HtmlTask();
+$result = $task(inputResource: $httpGetResource);
 ```

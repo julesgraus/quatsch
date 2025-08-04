@@ -180,7 +180,7 @@ class ReplaceTask implements LoggerAwareInterface {
 
             $pattern = $this->patterns[$replacementMutation->replaceWithPatternAtIndex];
             $pattern = $this->slidingWindowChunkProcessor->stringPatternInspector->withoutLookarounds($pattern);
-            $replacementPattern = is_array($this->replacement) ? $this->replacement[$replacementMutation->replaceWithPatternAtIndex] ?? '' : $this->replacement; //TODO FIX THIS LINE
+            $replacementPattern = is_array($this->replacement) ? $this->replacement[$replacementMutation->replaceWithPatternAtIndex] ?? '' : $this->replacement;
 
             $this->logger?->debug('Replacement: "' .$replacementPattern.'"');
 
