@@ -80,7 +80,23 @@ These are example paths you could use on the JSON example above:
 | `$..book[0].title`                                    | The title of the first book. **Result**: `Sayings of the Century`                                                                                                                            |
 | `$..book[0,1].title`<br>`$..book[:2].title`           | The titles of the first two books. **Result**: `[Sayings of the Century, Moby Dick]`                                                                                                         |
 
+## Usage
+Instantiate the JSON path tool and use it like this:
 
+```php
+use JulesGraus\Quatsch\JsonPath\JsonPath;
+use JulesGraus\Quatsch\JsonPath\JsonPathParser;
+
+$jsonPathTool = new JsonPath(
+    jsonPathParser: new JsonPathParser()
+);
+
+//Option 1. Use a JSON string:
+$name = $jsonPathTool(json: '{"name": "test user", "function": "beta tester"}', jsonPath: "$.name");
+
+//Option 2. Use a JSON decoded PHP value:
+$name = $jsonPathTool(json: json_decode('{"name": "test user", "function": "beta tester"}'), jsonPath: "$.name");
+```
 
 
 
